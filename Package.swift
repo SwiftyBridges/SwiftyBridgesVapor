@@ -18,6 +18,7 @@ let package = Package(
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", .revision("593d01f4017cf8b71ec28689629f7b9a6739df0b")),
+        .package(url: "https://github.com/stencilproject/Stencil.git", .upToNextMinor(from: "0.14.1")),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -26,15 +27,22 @@ let package = Package(
             name: "SwiftyBridges",
             dependencies: [
                 .product(name: "Vapor", package: "vapor"),
-            ]),
+            ]
+        ),
         .executableTarget(
             name: "BridgeBuilder",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "Stencil", package: "Stencil"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
-            ]),
+            ],
+            resources: [
+                .copy("Templates")
+            ]
+        ),
         .testTarget(
             name: "SwiftyBridgesTests",
-            dependencies: ["SwiftyBridges"]),
+            dependencies: ["SwiftyBridges"]
+        ),
     ]
 )

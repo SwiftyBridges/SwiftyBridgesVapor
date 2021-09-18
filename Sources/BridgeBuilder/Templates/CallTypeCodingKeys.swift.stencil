@@ -1,0 +1,7 @@
+        {% if method.parameters.count > 0 %}
+        enum CodingKeys: String, CodingKey {
+            {% for parameter in method.parameters %}
+            case parameter{{ forloop.counter0 }} = "{{ forloop.counter0 }}{% if parameter.label %}_{% endif%}{{ parameter.label }}"
+            {% endfor %}
+        }
+        {% endif %}
