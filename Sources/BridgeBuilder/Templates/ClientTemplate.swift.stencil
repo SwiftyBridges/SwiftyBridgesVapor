@@ -5,11 +5,11 @@ import SwiftyBridgesClient
 
 {% for apiType in apiDeclarations %}
 {{ apiType.leadingTrivia }}
-struct {{ apiType.name }}: SwiftyBridgesClient.API {
+class {{ apiType.name }}: SwiftyBridgesClient.API {
     private let baseRequest: URLRequest
     private let client: BridgeClient
 
-    init(baseRequest: URLRequest, client: BridgeClient = .shared) {
+    required init(baseRequest: URLRequest, client: BridgeClient = .shared) {
         self.baseRequest = baseRequest
         self.client = client
     }
