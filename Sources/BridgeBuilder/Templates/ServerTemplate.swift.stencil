@@ -15,15 +15,13 @@ extension {{ apiType.name }} {
     private struct {{ method.generatedTypeName }}: APIMethodCall {
         typealias API = {{ apiType.name }}
         typealias ReturnType = {{ method.returnType.codableEffectiveReturnTypeName }}
-        
+
         static let methodID: APIMethodID = "{{ method.methodID }}"
-        
+
         {% for parameter in method.parameters %}
         var parameter{{ forloop.counter0 }}: {{ parameter.typeName }}
         {% endfor %}
-        
         {% include "Templates/CallTypeCodingKeys.swift.stencil" %}
-        
         func call(on api: API) throws -> EventLoopFuture<{{ method.returnType.codableEffectiveReturnTypeName }}> {
             {% if not method.returnType.isFuture %}api.request.eventLoop.future({% endif %}
             {% if method.mayThrow %}try {% endif %}api.{{ method.name }}(
@@ -33,8 +31,10 @@ extension {{ apiType.name }} {
             )
             {% if not method.returnType.isFuture %}){% endif %}
             {% if method.returnsVoid %}.map { NoReturnValue() }{% endif %}
-            }
         }
+    }
+
     {% endfor %}
 }
+
 {% endfor %}

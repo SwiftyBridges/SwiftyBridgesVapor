@@ -8,41 +8,40 @@ import SwiftyBridgesClient
 struct {{ apiType.name }}: SwiftyBridgesClient.API {
     private let baseRequest: URLRequest
     private let client: BridgeClient
-    
+
     init(baseRequest: URLRequest, client: BridgeClient = .shared) {
         self.baseRequest = baseRequest
         self.client = client
     }
-
     {% for method in apiType.publicMethods %}
+
     {{ method.leadingTrivia }}
     func {{ method.name }}{{ method.clientMethodSignature }} {
-        let call = {{ method.generatedTypeName }}(
-            {% for parameter in method.parameters %}
-            parameter{{ forloop.counter0 }}: {{ parameter.variableName }}{% if not forloop.last %},{% endif %}
-            {% endfor %}
+        let call = {{ method.generatedTypeName }}({% for parameter in method.parameters %}
+            parameter{{ forloop.counter0 }}: {{ parameter.variableName }}{% if not forloop.last %},{% endif %}{% endfor %}
         )
         {% if method.returnsVoid %}_ ={% else %}return{% endif %} try await client.perform(call, baseRequest: baseRequest)
     }
     {% endfor %}
 }
-{% endfor %}
 
+{% endfor %}
 {% for apiType in apiDeclarations %}
 extension {{ apiType.name }} {
     {% for method in apiType.publicMethods %}
     private struct {{ method.generatedTypeName }}: APIMethodCall {
         typealias ReturnType = {{ method.returnType.codableEffectiveReturnTypeName }}
-                    
+
         static let typeName = "{{ apiType.name }}"
         static let methodID = "{{ method.methodID }}"
-        
+
         {% for parameter in method.parameters %}
         var parameter{{ forloop.counter0 }}: {{ parameter.typeName }}
         {% endfor %}
-        
         {% include "Templates/CallTypeCodingKeys.swift.stencil" %}
     }
+
     {% endfor %}
 }
+
 {% endfor %}

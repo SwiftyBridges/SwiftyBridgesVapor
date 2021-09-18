@@ -7,6 +7,7 @@
 
 import Foundation
 import Stencil
+import StencilSwiftKit
 
 class Generator {
     private let apiDeclarations: [APIDeclaration]
@@ -21,7 +22,10 @@ class Generator {
     
     func run() throws {
         let context = ["apiDeclarations": apiDeclarations]
-        let environment = Environment(loader: FileSystemLoader(bundle: [Bundle.module]))
+        let environment = Environment(
+            loader: FileSystemLoader(bundle: [Bundle.module]),
+            templateClass: StencilSwiftTemplate.self // <- Prevents ugly newlines in generated code
+        )
         
         let serverSource = try environment.renderTemplate(name: "Templates/ServerTemplate.swift.stencil", context: context)
         try Data(serverSource.utf8)
