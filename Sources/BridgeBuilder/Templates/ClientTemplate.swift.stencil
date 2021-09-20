@@ -6,13 +6,6 @@ import SwiftyBridgesClient
 {% for apiType in apiDeclarations %}
 {{ apiType.leadingTrivia }}
 class {{ apiType.name }}: SwiftyBridgesClient.API {
-    private let baseRequest: URLRequest
-    private let client: BridgeClient
-
-    required init(baseRequest: URLRequest, client: BridgeClient = .shared) {
-        self.baseRequest = baseRequest
-        self.client = client
-    }
     {% for method in apiType.publicMethods %}
 
     {{ method.leadingTrivia }}
@@ -20,7 +13,7 @@ class {{ apiType.name }}: SwiftyBridgesClient.API {
         let call = {{ method.generatedTypeName }}({% for parameter in method.parameters %}
             parameter{{ forloop.counter0 }}: {{ parameter.variableName }}{% if not forloop.last %},{% endif %}{% endfor %}
         )
-        {% if method.returnsVoid %}_ ={% else %}return{% endif %} try await client.perform(call, baseRequest: baseRequest)
+        {% if method.returnsVoid %}_ ={% else %}return{% endif %} try await perform(call)
     }
     {% endfor %}
 }
