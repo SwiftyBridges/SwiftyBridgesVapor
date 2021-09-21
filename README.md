@@ -128,12 +128,8 @@ struct IceCreamAPI: APIDefinition {
     var user: User
     
     init(request: Request) throws {
-        guard let user = request.auth.get(User.self) else {
-            throw Abort(.unauthorized, reason: "User not authenticated.")
-        }
-        
         self.request = request
-        self.user = user
+        self.user = try request.auth.require(User.self)
     }
     
     ...
@@ -252,12 +248,8 @@ struct IceCreamAPI: APIDefinition {
     var user: User
     
     init(request: Request) throws {
-        guard let user = request.auth.get(User.self) else {
-            throw Abort(.unauthorized, reason: "User not authenticated.")
-        }
-        
         self.request = request
-        self.user = user
+        self.user = try request.auth.require(User.self)
     }
     
     ...
