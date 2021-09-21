@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  File
+//  APIRegistration.swift
+//  APIRegistration
 //
 //  Created by Stephen Kockentiedt on 16.09.21.
 //
@@ -8,6 +8,7 @@
 import Foundation
 import Vapor
 
+/// Contains the calling logic of a specific registered API definition type
 struct APIRegistration<API: APIDefinition> {
     private let methodByID: [APIMethodID: AnyAPIMethod<API>]
     
@@ -19,6 +20,15 @@ struct APIRegistration<API: APIDefinition> {
 }
 
 extension APIRegistration: Responder {
+    /// Handles an API method call request for `API` from start to finish
+    ///
+    /// * Applies the correct middlewares
+    /// * Decodes the method ID and parameters from `request`
+    /// * Calls the API method
+    /// * Encodes the return value or the thrown error as a `Response`
+    ///
+    /// - Parameter request: The method call request
+    /// - Returns: The result of the method call as a `Response`
     func respond(to request: Request) -> EventLoopFuture<Response> {
         guard
             let methodID = request.headers["API-Method"].first,
@@ -33,6 +43,7 @@ extension APIRegistration: Responder {
     }
 }
 
+/// Allows an `AnyAPIMethod` to be embedded inside middlewares.
 struct MethodCallResponder<API: APIDefinition> {
     var method: AnyAPIMethod<API>
 }

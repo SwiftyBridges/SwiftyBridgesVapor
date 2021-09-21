@@ -21,15 +21,11 @@ struct BridgeBuilder: ParsableCommand {
     @Option(help: "Generated target Swift file for the client")
     var clientOutput: String
     
-    @Flag(help: "Print verbose logs")
-    var verbose: Bool = false
-    
     mutating func run() throws {
-        // Step 1: Analyze all files looking for `distributed actor` decls
-        let analysis = Analysis(sourceDirectory: sourceDirectory, verbose: verbose)
+        let analysis = Analysis(sourceDirectory: sourceDirectory)
         analysis.run()
         
-        let generator = Generator(apiDeclarations: analysis.apiDeclarations, serverOutputFile: serverOutput, clientOutputFile: clientOutput)
+        let generator = Generator(apiDefinitions: analysis.apiDefinitions, serverOutputFile: serverOutput, clientOutputFile: clientOutput)
         try generator.run()
     }
 }

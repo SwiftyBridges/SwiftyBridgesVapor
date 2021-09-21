@@ -1,22 +1,26 @@
 //
-//  MethodDeclaration.swift
-//  MethodDeclaration
+//  MethodDefinition.swift
+//  MethodDefinition
 //
 //  Created by Stephen Kockentiedt on 18.09.21.
 //
 
 import Foundation
 
-struct MethodDeclaration {
+/// Infos about an API method
+struct MethodDefinition {
     var name: String
+    
+    /// Contains the documentation comments of the method
     var leadingTrivia: String
+    
     var isInlinable: Bool
     var parameters: [Parameter]
     var mayThrow: Bool
     var returnType: ReturnType
 }
 
-extension MethodDeclaration: CustomReflectable {
+extension MethodDefinition: CustomReflectable {
     /// This is needed so that the computed properties are found by Stencil
     var customMirror: Mirror {
         Mirror(

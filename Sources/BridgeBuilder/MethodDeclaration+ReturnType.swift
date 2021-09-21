@@ -7,7 +7,8 @@
 
 import Foundation
 
-extension MethodDeclaration {
+extension MethodDefinition {
+    /// Infos about the return type of an API method
     enum ReturnType {
         case void
         case codable(typeName: String)
@@ -16,7 +17,7 @@ extension MethodDeclaration {
     }
 }
 
-extension MethodDeclaration.ReturnType: CustomReflectable {
+extension MethodDefinition.ReturnType: CustomReflectable {
     var customMirror: Mirror {
         Mirror(
             self,
@@ -37,6 +38,7 @@ extension MethodDeclaration.ReturnType: CustomReflectable {
         }
     }
     
+    /// This is the same as `effectiveReturnTypeName` only that `Void` is replaced by `NoReturnValue`. This is needed so that the generated code compiles because `Void` does noch conform to `Codable`.
     var codableEffectiveReturnTypeName: String {
         switch self {
         case .void, .voidEventLoopFuture:

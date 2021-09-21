@@ -3,7 +3,7 @@
 import Foundation
 import SwiftyBridgesClient
 
-{% for apiType in apiDeclarations %}
+{% for apiType in apiDefinitions %}
 {{ apiType.leadingTrivia }}
 struct {{ apiType.name }}: SwiftyBridgesClient.API {
     private let baseRequest: URLRequest
@@ -32,7 +32,7 @@ struct {{ apiType.name }}: SwiftyBridgesClient.API {
 }
 {% endfor %}
 
-{% for apiType in apiDeclarations %}
+{% for apiType in apiDefinitions %}
 extension {{ apiType.name }} {
     {% for method in apiType.publicMethods %}
     private struct {{ method.generatedTypeName }}: APIMethodCall {

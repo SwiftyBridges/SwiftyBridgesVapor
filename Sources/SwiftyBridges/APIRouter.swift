@@ -8,7 +8,11 @@
 import Foundation
 import Vapor
 
+/// Responsible for routing API method requests to the correct API definitions
+///
+/// For instructions how to use it, see `README.md`.
 public class APIRouter {
+    /// Stores `APIRegistration` instances keyed by the name of the API definition type
     private var registrationByTypeName: [String: Responder] = [:]
     
     public init() {}
@@ -18,18 +22,26 @@ public class APIRouter {
 // MARK: - Public Members
 
 extension APIRouter {
+    /// Before an API Definition can be called via SwiftyBridges, it must first be registered with an `APIRouter`
+    ///
+    /// - Parameter api: The API definition type to be registered
     public func register<API: APIDefinition>(_ api: API.Type) {
         let typeName = String(describing: API.self)
         let registration = APIRegistration<API>()
         registrationByTypeName[typeName] = registration
     }
     
+    /// Must be called inside a POST route to correctly handle API method requests.
+    /// - Parameter request: The POST request sent by SwiftyBridgesClient
+    /// - Returns: A response to be returned by the POST route
     public func handle(_ request: Request) -> EventLoopFuture<Response> {
-        guard
-            let apiTypeName = request.headers["API-Type"].first,
-            let registration = registrationByTypeName[apiTypeName]
-        else {
+        guard let apiTypeName = request.headers["API-Type"].first else {
             return request.eventLoop.makeFailedFuture(Abort(.badRequest))
+        }
+        
+        guard let registration = registrationByTypeName[apiTypeName] else {
+            print("API definition type '\(apiTypeName)' has not been registered with this APIRouter.")
+            return request.eventLoop.makeFailedFuture(Abort(.badRequest, reason: "API definition '\(apiTypeName)' has not been registered on the server"))
         }
         
         return registration.respond(to: request)

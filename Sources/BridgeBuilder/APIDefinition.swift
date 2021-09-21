@@ -1,6 +1,6 @@
 //
-//  APIDeclaration.swift
-//  APIDeclaration
+//  APIDefinition.swift
+//  APIDefinition
 //
 //  Created by Stephen Kockentiedt on 18.09.21.
 //
@@ -8,9 +8,9 @@
 import Foundation
 import SwiftSyntax
 
-struct APIDeclaration {
+struct APIDefinition {
     var name: String
     var leadingTrivia: String
-    var publicMethods: [MethodDeclaration] = []
+    var publicMethods: [MethodDefinition] = []
     var structSyntax: StructDeclSyntax
 }

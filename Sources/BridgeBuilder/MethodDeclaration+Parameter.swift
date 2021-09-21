@@ -8,7 +8,8 @@
 import Foundation
 import SwiftSyntax
 
-extension MethodDeclaration {
+extension MethodDefinition {
+    /// Infos about a method parameter
     struct Parameter {
         var firstName: String?
         var secondName: String?
@@ -18,7 +19,7 @@ extension MethodDeclaration {
 
 // MARK: - Additional Initializer
 
-extension MethodDeclaration.Parameter {
+extension MethodDefinition.Parameter {
     init(_ syntax: FunctionParameterSyntax) {
         guard let typeName = syntax.type?.withoutTrivia().description else {
             fatalError("Could not parse method argument '\(syntax.withTrailingComma(nil).withoutTrivia().description)'")
@@ -30,7 +31,7 @@ extension MethodDeclaration.Parameter {
     }
 }
 
-extension MethodDeclaration.Parameter: CustomReflectable {
+extension MethodDefinition.Parameter: CustomReflectable {
     /// This is needed so that the computed properties are found by Stencil
     var customMirror: Mirror {
         Mirror(

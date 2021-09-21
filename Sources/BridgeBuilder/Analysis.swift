@@ -1,20 +1,26 @@
 import SwiftSyntax
 import Foundation
 
+/// Parses API definitions in the Swift files in the given source directory.
 final class Analysis: SyntaxVisitor {
+    /// Contains infos about the found API definitions after `run()` has finished.
+    var apiDefinitions: [APIDefinition] = []
     
+    /// The path to a directory containing the Swift files to be parsed
     private let sourceDirectory: String
-    private let verbose: Bool
     
-    var apiDeclarations: [APIDeclaration] = []
-    private var currentDeclaration: APIDeclaration?
+    /// The definition being currently parsed
+    private var currentDefintion: APIDefinition?
     
-    init(sourceDirectory: String, verbose: Bool) {
+    /// Default initializer
+    /// - Parameter sourceDirectory: The path to a directory containing the Swift files to be parsed
+    init(sourceDirectory: String) {
         self.sourceDirectory = sourceDirectory
-        self.verbose = verbose
     }
     
+    /// Performs the parsing
     func run() {
+        apiDefinitions = []
         let enumerator = FileManager.default.enumerator(atPath: sourceDirectory)
         while let path = enumerator?.nextObject() as? String {
             guard path.hasSuffix(".swift") else {
@@ -32,9 +38,6 @@ final class Analysis: SyntaxVisitor {
     }
     
     func analyze(file path: URL) throws {
-        if verbose {
-            print("Analyze: \(path.relativePath)")
-        }
         let sourceFile = try SyntaxParser.parse(path)
         self.walk(sourceFile)
     }
@@ -44,20 +47,20 @@ final class Analysis: SyntaxVisitor {
             return .skipChildren
         }
         
-        guard currentDeclaration == nil else {
+        guard currentDefintion == nil else {
             fatalError("Nested API definitions are not supported.")
         }
         
         let leadingTrivia = String(node.description.utf8.prefix(node.leadingTriviaLength.utf8Length))?.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        currentDeclaration = APIDeclaration(name: node.identifier.text, leadingTrivia: leadingTrivia ?? "", structSyntax: node)
+        currentDefintion = APIDefinition(name: node.identifier.text, leadingTrivia: leadingTrivia ?? "", structSyntax: node)
         
         return .visitChildren
     }
     
     override func visitPost(_ node: StructDeclSyntax) {
         guard
-            let currentDeclaration = currentDeclaration,
+            let currentDeclaration = currentDefintion,
             node == currentDeclaration.structSyntax
         else {
             return
@@ -67,13 +70,13 @@ final class Analysis: SyntaxVisitor {
             print("WARNING: The type \(currentDeclaration.name) seems to have no public methods. No API methods will be generated in the client code.")
         }
         
-        apiDeclarations.append(currentDeclaration)
-        self.currentDeclaration = nil
+        apiDefinitions.append(currentDeclaration)
+        self.currentDefintion = nil
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         guard
-            var currentDeclaration = currentDeclaration,
+            var currentDeclaration = currentDefintion,
             isPublic(node)
         else {
             return .skipChildren
@@ -98,9 +101,9 @@ final class Analysis: SyntaxVisitor {
         
         let isInlinable = self.isInlinable(node)
         
-        let parameters = node.signature.input.parameterList.map(MethodDeclaration.Parameter.init)
+        let parameters = node.signature.input.parameterList.map(MethodDefinition.Parameter.init)
         
-        let methodDeclaration = MethodDeclaration(
+        let methodDeclaration = MethodDefinition(
             name: node.identifier.text,
             leadingTrivia: leadingTrivia ?? "",
             isInlinable: isInlinable,
@@ -110,7 +113,7 @@ final class Analysis: SyntaxVisitor {
         )
         
         currentDeclaration.publicMethods.append(methodDeclaration)
-        self.currentDeclaration = currentDeclaration
+        self.currentDefintion = currentDeclaration
         
         return .skipChildren
     }
@@ -155,7 +158,7 @@ final class Analysis: SyntaxVisitor {
         ?? false
     }
     
-    private func returnType(of node: FunctionDeclSyntax) -> MethodDeclaration.ReturnType {
+    private func returnType(of node: FunctionDeclSyntax) -> MethodDefinition.ReturnType {
         if let type = node.signature.output?.returnType {
             if let simpleSyntax = type.as(SimpleTypeIdentifierSyntax.self) {
                 if simpleSyntax.name.description == "EventLoopFuture" {
