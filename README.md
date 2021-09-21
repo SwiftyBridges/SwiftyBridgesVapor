@@ -40,6 +40,8 @@ print(greeting)
 
 Server: Vapor >= 4.0
 
+Code generation: Xcode 13.0
+
 Client: Swift >= 5.5
 
 ## Usage
@@ -139,6 +141,8 @@ struct IceCreamAPI: APIDefinition {
 ```
 
 ### Code generation
+
+> :warning: **Code generation currently needs the command line tools of Xcode 13.0**
 
 To generate the communication code for both server and client, run the following commands in terminal:
 
