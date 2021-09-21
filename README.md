@@ -97,7 +97,7 @@ app.post("api") { req -> EventLoopFuture<Response> in
 }
 ```
 
-#### Optional Features {#optional-features}
+#### Optional Features
 
 API methods may return futures of `Codable` values:
 
@@ -280,7 +280,7 @@ Authentication may also be done by:
     ```swift
     let api = IceCreamAPI(url: serverURLWithConfiguredQuery)
     ```
-- Passing authentication information HTTP headers:
+- Passing authentication information in HTTP headers:
     ```swift
     let api = IceCreamAPI(baseRequest: requestWithPresetHTTPHeaders)
     ```
@@ -352,6 +352,6 @@ Task {
     - Variadic parameters
     - `async`
 - All errors thrown by API methods are currently converted to `HTTPError` on the client
-- Running code generation as part of the server code compilation is currently not supported. This will hopefully change when [package plugins](https://github.com/apple/swift-evolution/blob/main/proposals/0303-swiftpm-extensible-build-tools.md) land in Swift 5.6.
+- Running code generation as part of the server code compilation is currently not supported. This will hopefully change when [Package Plugins](https://github.com/apple/swift-evolution/blob/main/proposals/0303-swiftpm-extensible-build-tools.md) land in Swift 5.6.
 
 If any of these limitations is bothering you, please get in touch.
