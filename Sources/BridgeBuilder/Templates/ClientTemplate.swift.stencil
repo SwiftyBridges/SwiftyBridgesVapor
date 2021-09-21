@@ -13,7 +13,7 @@ class {{ apiType.name }}: SwiftyBridgesClient.API {
         let call = {{ method.generatedTypeName }}({% for parameter in method.parameters %}
             parameter{{ forloop.counter0 }}: {{ parameter.variableName }}{% if not forloop.last %},{% endif %}{% endfor %}
         )
-        {% if method.returnsVoid %}_ ={% else %}return{% endif %} try await APIHelper.performAPIMethodCall(api: self, call: call)
+        {% if method.returnsVoid %}_ ={% else %}return{% endif %} try await SwiftyBridgesAPIHelper.performAPIMethodCall(api: self, call: call)
     }
     {% endfor %}
 }
