@@ -12,8 +12,8 @@ struct BridgeBuilder: ParsableCommand {
         CommandConfiguration(commandName:"swift run BridgeBuilder")
     }
     
-    @Option(name: .shortAndLong, help: "Directory containing the API definitions")
-    var source: String
+    @Argument(help: "Directory containing the API definitions")
+    var sourceDirectory: String
     
     @Option(help: "Generated target Swift file for the server")
     var serverOutput: String = "ServerGenerated.swift"
@@ -22,7 +22,7 @@ struct BridgeBuilder: ParsableCommand {
     var clientOutput: String = "ClientGenerated.swift"
     
     mutating func run() throws {
-        let analysis = Analysis(sourceDirectory: source)
+        let analysis = Analysis(sourceDirectory: sourceDirectory)
         analysis.run()
         
         let generator = Generator(apiDefinitions: analysis.apiDefinitions, serverOutputFile: serverOutput, clientOutputFile: clientOutput)
