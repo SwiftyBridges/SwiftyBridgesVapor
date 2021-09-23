@@ -16,10 +16,10 @@ struct BridgeBuilder: ParsableCommand {
     var sourceDirectory: String
     
     @Option(help: "Generated target Swift file for the server")
-    var serverOutput: String
+    var serverOutput: String = "ServerGenerated.swift"
     
     @Option(help: "Generated target Swift file for the client")
-    var clientOutput: String
+    var clientOutput: String = "ClientGenerated.swift"
     
     mutating func run() throws {
         let analysis = Analysis(sourceDirectory: sourceDirectory)
@@ -27,6 +27,10 @@ struct BridgeBuilder: ParsableCommand {
         
         let generator = Generator(apiDefinitions: analysis.apiDefinitions, serverOutputFile: serverOutput, clientOutputFile: clientOutput)
         try generator.run()
+        
+        print("Generated server code was written to '\(serverOutput)'.")
+        print("Generated client code was written to '\(clientOutput)'.")
+        print("Please add the source files to the corresponding app.")
     }
 }
 
