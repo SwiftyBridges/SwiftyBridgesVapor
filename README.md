@@ -203,7 +203,7 @@ import PackageDescription
 let package = Package(
     name: "MyServer",
     dependencies: [
-        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesVapor.git", .upToNextMinor(from: "0.1.1")),
+        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesVapor.git", .upToNextMinor(from: "0.1.2")),
     ],
     targets: [
         .target(
