@@ -179,13 +179,13 @@ import PackageDescription
 let package = Package(
     name: "MyServer",
     dependencies: [
-        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesVapor.git", .upToNextMinor(from: "0.1")),
+        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesVapor.git", .upToNextMinor(from: "0.1.0")),
     ],
     targets: [
         .target(
             name: "App",
             dependencies: [
-                .product(name: "SwiftyBridges", package: "SwiftyBridges"),
+                .product(name: "SwiftyBridges", package: "SwiftyBridgesVapor"),
             ]
         ),
     ]
@@ -203,7 +203,7 @@ import PackageDescription
 let package = Package(
     name: "MyApp",
     dependencies: [
-        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesClient.git", .upToNextMinor(from: "0.1")),
+        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesClient.git", .upToNextMinor(from: "0.1.0")),
     ],
     targets: [
         .target(
