@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import PathKit
 import Stencil
 import StencilSwiftKit
 
@@ -29,8 +30,20 @@ class Generator {
     /// Generates the code and writes it to the given output file paths.
     func run() throws {
         let context = ["apiDefinitions": apiDefinitions]
+        let loader: FileSystemLoader
+        if
+            let resourceURL = Bundle.main.resourceURL,
+            FileManager.default.fileExists(atPath: resourceURL.appendingPathComponent("Templates").path)
+        {
+            // We are running via Mint
+            loader = FileSystemLoader(paths: [Path(resourceURL.path)])
+        }
+        else
+        {
+            loader = FileSystemLoader(bundle: [Bundle.module])
+        }
         let environment = Environment(
-            loader: FileSystemLoader(bundle: [Bundle.module]),
+            loader: loader,
             templateClass: StencilSwiftTemplate.self // <- Prevents ugly newlines in generated code
         )
         
