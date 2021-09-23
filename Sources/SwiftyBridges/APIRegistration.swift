@@ -30,11 +30,13 @@ extension APIRegistration: Responder {
     /// - Parameter request: The method call request
     /// - Returns: The result of the method call as a `Response`
     func respond(to request: Request) -> EventLoopFuture<Response> {
-        guard
-            let methodID = request.headers["API-Method"].first,
-            let method = methodByID[APIMethodID(rawValue: methodID)]
-        else {
+        guard let methodID = request.headers["API-Method"].first else {
             return request.eventLoop.makeFailedFuture(Abort(.badRequest))
+        }
+        
+        guard let method = methodByID[APIMethodID(rawValue: methodID)] else {
+            print("WARNING: API method call '\(methodID)' was not found. Please make sure that you have added the generated source code to the server app.")
+            return request.eventLoop.makeFailedFuture(Abort(.badRequest, reason: "API method call '\(methodID)' was not found"))
         }
         
         let methodCallResponder = MethodCallResponder(method: method)
