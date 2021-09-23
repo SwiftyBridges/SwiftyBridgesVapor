@@ -6,7 +6,7 @@
 
 SwiftyBridges is here to help! 😎
 
-## What is SwiftyBridges?
+# What is SwiftyBridges?
 
 SwiftyBridges lets you write the server logic in a simple way and then automatically generates an API client plus all communication code for both server and client.
 
@@ -36,7 +36,7 @@ let greeting = try await api.hello(firstName: "Swifty", lastName: "Bridges")
 print(greeting)
 ```
 
-## Requirements
+# Requirements
 
 Server: Vapor >= 4.0
 
@@ -44,9 +44,9 @@ Code generation: Xcode 13.0
 
 Client: Swift >= 5.5
 
-## Usage
+# Usage
 
-### Server
+## Server
 
 Create an API definition:
 
@@ -97,7 +97,7 @@ app.post("api") { req -> EventLoopFuture<Response> in
 }
 ```
 
-#### Optional Features
+### Optional Features
 
 API methods may return futures of `Codable` values:
 
@@ -136,21 +136,45 @@ struct IceCreamAPI: APIDefinition {
 }
 ```
 
-### Code generation
+## Code generation
 
 > :warning: **Code generation currently needs the command line tools of Xcode 13.0**
+
+### Using [Mint](https://github.com/yonaskolb/mint)
+
+Ensure Mint is installed:
+
+```console
+$ brew install mint
+```
+
+Then run:
+
+```console
+$ mint run SwiftyBridges/SwiftyBridgesVapor@0.1.1 [path to server package]/Sources/App
+```
+
+(The first time you run this, this may take several minutes.)
+
+This will generate the files `ServerGenerated.swift` and `ClientGenerated.swift`. Make sure that these files are in the right directories (`ServerGenerated.swift` in the server project and `ClientGenerated.swift` in the client project) and are compiled.
+
+Alternatively, you can add `--server-output [path to server package]/Sources/App/Generated.swift --client-output [path to client code]/Generated.swift` to the command to directly generate the swift files in the correct places.
+
+### Manually
 
 To generate the communication code for both server and client, run the following commands in terminal:
 
 ```console
-git clone https://github.com/SwiftyBridges/SwiftyBridgesVapor.git
-cd SwiftyBridgesVapor
-swift run BridgeBuilder [path to server package]/Sources/App --server-output [path to server package]/Sources/App/Generated.swift --client-output [path to client code]/Generated.swift
+$ git clone https://github.com/SwiftyBridges/SwiftyBridgesVapor.git
+$ cd SwiftyBridgesVapor
+$ swift run BridgeBuilder [path to server package]/Sources/App
 ```
 
-Then make sure that the generated Swift files for both server and client are in the right directories and are compiled.
+This will generate the files `ServerGenerated.swift` and `ClientGenerated.swift`. Make sure that these files are in the right directories (`ServerGenerated.swift` in the server project and `ClientGenerated.swift` in the client project) and are compiled.
 
-### Client
+Alternatively, you can add `--server-output [path to server package]/Sources/App/Generated.swift --client-output [path to client code]/Generated.swift` to the command to directly generate the swift files in the correct places.
+
+## Client
 
 Make sure all `Codable` types that are used by the API methods are available to the generated code.
 
@@ -166,9 +190,9 @@ let flavors: [IceCreamFlavor] = try await api.getAllFlavors()
 
 That's it!
 
-## Installation
+# Installation
 
-### Server
+## Server
 
 Add `SwiftyBridgesVapor` to your `Package.swift`:
 
@@ -179,7 +203,7 @@ import PackageDescription
 let package = Package(
     name: "MyServer",
     dependencies: [
-        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesVapor.git", .upToNextMinor(from: "0.1.0")),
+        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesVapor.git", .upToNextMinor(from: "0.1.1")),
     ],
     targets: [
         .target(
@@ -192,7 +216,7 @@ let package = Package(
 )
 ```
 
-### Client
+## Client
 
 Add `SwiftyBridgesClient` with a version matching the version of `SwiftyBridgesVapor` used by the server in Xcode or to your `Package.swift`:
 
@@ -203,7 +227,7 @@ import PackageDescription
 let package = Package(
     name: "MyApp",
     dependencies: [
-        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesClient.git", .upToNextMinor(from: "0.1.0")),
+        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesClient.git", .upToNextMinor(from: "0.1.1")),
     ],
     targets: [
         .target(
@@ -216,7 +240,7 @@ let package = Package(
 )
 ```
 
-## Authentication
+# Authentication
 
 A simple way to implement authentication is via bearer tokens:
 
@@ -277,7 +301,7 @@ Authentication may also be done by:
     let api = IceCreamAPI(baseRequest: requestWithPresetHTTPHeaders)
     ```
 
-### Login
+## Login
 
 Login may for example be implemented using an unauthenticated API definition like so:
 
@@ -317,7 +341,7 @@ struct LoginAPI: APIDefinition {
 
 The client can then use the returned user token as the bearer token as explained above.
 
-### Login Expiration
+## Login Expiration
 
 If the login has expired, the server can throw an `Abort(.unauthorized)` or just use a middleware like `UserToken.authenticator()` in combination with `User.guardMiddleware()`.
 
@@ -336,7 +360,7 @@ Task {
 }
 ```
 
-## Current Limitations
+# Current Limitations
 
 - SwiftyBridges currently only supports [Vapor](https://vapor.codes/) on the server-side
 - Server-side API methods do not currently support the following features:
