@@ -11,6 +11,9 @@ let package = Package(
         .library(
             name: "SwiftyBridges",
             targets: ["SwiftyBridges"]),
+        .executable(
+            name: "BridgeBuilder",
+            targets: ["BridgeBuilder"])
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
