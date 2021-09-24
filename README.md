@@ -231,7 +231,7 @@ import PackageDescription
 let package = Package(
     name: "MyApp",
     dependencies: [
-        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesClient.git", .upToNextMinor(from: "0.1.1")),
+        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesClient.git", .upToNextMinor(from: "0.2.0")),
     ],
     targets: [
         .target(
