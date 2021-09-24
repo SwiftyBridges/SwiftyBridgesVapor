@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftyBridges",
+    name: "SwiftyBridgesVapor",
     platforms: [
         .macOS(.v10_15)
     ],
