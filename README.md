@@ -151,7 +151,7 @@ $ brew install mint
 Then run:
 
 ```console
-$ mint run SwiftyBridges/SwiftyBridgesVapor@0.1.1 [path to server package]/Sources/App
+$ mint run SwiftyBridges/SwiftyBridgesVapor@0.2.0 [path to server package]/Sources/App
 ```
 
 (The first time you run this, this may take several minutes.)
@@ -207,7 +207,7 @@ import PackageDescription
 let package = Package(
     name: "MyServer",
     dependencies: [
-        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesVapor.git", .upToNextMinor(from: "0.1.2")),
+        .package(url: "https://github.com/SwiftyBridges/SwiftyBridgesVapor.git", .upToNextMinor(from: "0.2.0")),
     ],
     targets: [
         .target(
