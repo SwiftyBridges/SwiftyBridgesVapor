@@ -190,6 +190,10 @@ let flavors: [IceCreamFlavor] = try await api.getAllFlavors()
 
 That's it!
 
+# Examples
+
+You can find a sample server and client implementation in the [Examples repository](https://github.com/SwiftyBridges/Examples).
+
 # Installation
 
 ## Server
