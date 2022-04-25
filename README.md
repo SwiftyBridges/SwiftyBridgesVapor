@@ -52,6 +52,7 @@ Create an API definition:
 
 ```swift
 import SwiftyBridges
+import Vapor
 
 struct IceCreamAPI: APIDefinition {
     var request: Request
