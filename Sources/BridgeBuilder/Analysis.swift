@@ -1,4 +1,5 @@
 import SwiftSyntax
+import SwiftSyntaxParser
 import Foundation
 
 /// Parses API definitions in the Swift files in the given source directory.
