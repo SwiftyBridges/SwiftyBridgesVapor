@@ -36,14 +36,24 @@ let package = Package(
                 .product(name: "Stencil", package: "Stencil"),
                 .product(name: "SwiftSyntax", package: "SwiftSyntax"),
                 .product(name: "StencilSwiftKit", package: "StencilSwiftKit"),
+                "lib_InternalSwiftSyntaxParser",
             ],
             resources: [
                 .copy("Templates")
+            ],
+            // `-dead_strip_dylibs` is passed because we want to use the version of lib_InternalSwiftSyntaxParser from StaticInternalSwiftSyntaxParser.
+            linkerSettings: [
+                .unsafeFlags(["-Xlinker", "-dead_strip_dylibs"])
             ]
         ),
         .testTarget(
             name: "SwiftyBridgesTests",
             dependencies: ["SwiftyBridges"]
+        ),
+        .binaryTarget(
+            name: "lib_InternalSwiftSyntaxParser",
+            url: "https://github.com/keith/StaticInternalSwiftSyntaxParser/releases/download/5.5.2/lib_InternalSwiftSyntaxParser.xcframework.zip",
+            checksum: "96bbc9ab4679953eac9ee46778b498cb559b8a7d9ecc658e54d6679acfbb34b8"
         ),
     ]
 )

@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug BridgeBuilder",
+            "program": "${workspaceFolder:SwiftyBridgesVapor}/.build/debug/BridgeBuilder",
+            "args": [],
+            "cwd": "${workspaceFolder:SwiftyBridgesVapor}",
+            "preLaunchTask": "swift: Build Debug BridgeBuilder"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Release BridgeBuilder",
+            "program": "${workspaceFolder:SwiftyBridgesVapor}/.build/release/BridgeBuilder",
+            "args": [],
+            "cwd": "${workspaceFolder:SwiftyBridgesVapor}",
+            "preLaunchTask": "swift: Build Release BridgeBuilder"
+        }
+    ]
+}
