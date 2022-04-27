@@ -182,7 +182,7 @@ final class Analysis: SyntaxVisitor {
                 if isVoid(type) {
                     return .void
                 } else {
-                    fatalError("Could not parse return type of function \(node.signature.description)")
+                    return .codable(typeName: type.withoutTrivia().description)
                 }
             }
         } else {
