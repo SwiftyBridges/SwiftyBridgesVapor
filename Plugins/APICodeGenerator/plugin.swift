@@ -7,6 +7,8 @@ import PackagePlugin
         let outputDirectory = context.pluginWorkDirectory.appending("GeneratedSources")
         let serverOutputFile = outputDirectory.appending("server.swift")
         let clientOutputFile = outputDirectory.appending("client.swift")
+        
+        let target = target as! SourceModuleTarget
 
         return [
             .buildCommand(
@@ -18,6 +20,7 @@ import PackagePlugin
                     "--client-output", clientOutputFile,
                 ],
                 environment: [:],
+                inputFiles: target.sourceFiles(withSuffix: ".swift").map { $0.path },
                 outputFiles: [
                     serverOutputFile,
                 ]
