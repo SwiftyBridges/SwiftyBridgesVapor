@@ -11,7 +11,7 @@ final class Analysis: SyntaxVisitor {
     private let sourceDirectory: String
     
     /// The definition being currently parsed
-    private var currentDefintion: APIDefinition?
+    private var currentDefinition: APIDefinition?
     
     /// Default initializer
     /// - Parameter sourceDirectory: The path to a directory containing the Swift files to be parsed
@@ -48,20 +48,20 @@ final class Analysis: SyntaxVisitor {
             return .skipChildren
         }
         
-        guard currentDefintion == nil else {
+        guard currentDefinition == nil else {
             fatalError("Nested API definitions are not supported.")
         }
         
         let leadingTrivia = String(node.description.utf8.prefix(node.leadingTriviaLength.utf8Length))?.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        currentDefintion = APIDefinition(name: node.identifier.text, leadingTrivia: leadingTrivia ?? "", structSyntax: node)
+        currentDefinition = APIDefinition(name: node.identifier.text, leadingTrivia: leadingTrivia ?? "", structSyntax: node)
         
         return .visitChildren
     }
     
     override func visitPost(_ node: StructDeclSyntax) {
         guard
-            let currentDeclaration = currentDefintion,
+            let currentDeclaration = currentDefinition,
             node == currentDeclaration.structSyntax
         else {
             return
@@ -72,12 +72,12 @@ final class Analysis: SyntaxVisitor {
         }
         
         apiDefinitions.append(currentDeclaration)
-        self.currentDefintion = nil
+        self.currentDefinition = nil
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         guard
-            var currentDeclaration = currentDefintion,
+            var currentDeclaration = currentDefinition,
             isPublic(node)
         else {
             return .skipChildren
@@ -114,7 +114,7 @@ final class Analysis: SyntaxVisitor {
         )
         
         currentDeclaration.publicMethods.append(methodDeclaration)
-        self.currentDefintion = currentDeclaration
+        self.currentDefinition = currentDeclaration
         
         return .skipChildren
     }
