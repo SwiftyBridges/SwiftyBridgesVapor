@@ -56,11 +56,15 @@ class Generator {
         )
         
         let serverSource = try environment.renderTemplate(name: "Templates/ServerTemplate.swift.stencil", context: context)
+        let serverFileURL = URL(fileURLWithPath: serverOutputFile)
+        try FileManager.default.createDirectory(at: serverFileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Data(serverSource.utf8)
-            .write(to: URL(fileURLWithPath: serverOutputFile))
+            .write(to: serverFileURL)
         
         let clientSource = try environment.renderTemplate(name: "Templates/ClientTemplate.swift.stencil", context: context)
+        let clientFileURL = URL(fileURLWithPath: clientOutputFile)
+        try FileManager.default.createDirectory(at: clientFileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         try Data(clientSource.utf8)
-            .write(to: URL(fileURLWithPath: clientOutputFile))
+            .write(to: clientFileURL)
     }
 }
