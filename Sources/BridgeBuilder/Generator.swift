@@ -46,6 +46,10 @@ class Generator {
             // We are running via Mint
             loader = FileSystemLoader(paths: [Path(resourceURL.path)])
         }
+        else if let resourcePath = Bundle.module.resourcePath
+        {
+            loader = FileSystemLoader(paths: [Path(resourcePath)])
+        }
         else
         {
             loader = FileSystemLoader(bundle: [Bundle.module])
