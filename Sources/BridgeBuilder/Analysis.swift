@@ -1,14 +1,20 @@
+import Foundation
 import SwiftSyntax
 import SwiftSyntaxParser
-import Foundation
 
 /// Parses API definitions in the Swift files in the given source directory.
 final class Analysis: SyntaxVisitor {
-    /// Contains infos about the found API definitions after `run()` has finished.
+    /// Contains the names of all imports used in any file containing an API definition
+    var potentiallyUsedImports: Set<String> = []
+
+    /// Contains infos about the found API definitions after `run()` has finished
     var apiDefinitions: [APIDefinition] = []
     
     /// The path to a directory containing the Swift files to be parsed
     private let sourceDirectory: String
+
+    /// The names of the imports in the file currently analyzed
+    private var importsOfCurrentFile: Set<String> = []
     
     /// The definition being currently parsed
     private var currentDefinition: APIDefinition?
@@ -40,7 +46,21 @@ final class Analysis: SyntaxVisitor {
     
     func analyze(file path: URL) throws {
         let sourceFile = try SyntaxParser.parse(path)
+        self.importsOfCurrentFile = []
         self.walk(sourceFile)
+    }
+
+    override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
+        let importName: String
+        if node.importKind == nil {
+            importName = node.path.withoutTrivia().description
+        } else {
+            importName = node.path.removingLast().withoutTrivia().description.trimmingCharacters(in: .init(charactersIn: "."))
+        }
+
+        self.importsOfCurrentFile.insert(importName)
+        
+        return .skipChildren
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
@@ -73,6 +93,7 @@ final class Analysis: SyntaxVisitor {
         
         apiDefinitions.append(currentDeclaration)
         self.currentDefinition = nil
+        self.potentiallyUsedImports.formUnion(self.importsOfCurrentFile)
     }
     
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {

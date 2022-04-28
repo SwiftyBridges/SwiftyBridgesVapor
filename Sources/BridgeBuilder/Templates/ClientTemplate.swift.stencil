@@ -2,6 +2,12 @@
 
 import Foundation
 import SwiftyBridgesClient
+{% for import in conditionalImports %}
+
+#if canImport({{ import }})
+    import {{ import }}
+#endif
+{% endfor %}
 
 {% for apiType in apiDefinitions %}
 {{ apiType.leadingTrivia }}

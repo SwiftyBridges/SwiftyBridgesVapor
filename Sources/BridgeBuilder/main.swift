@@ -25,7 +25,7 @@ struct BridgeBuilder: ParsableCommand {
         let analysis = Analysis(sourceDirectory: sourceDirectory)
         analysis.run()
         
-        let generator = Generator(apiDefinitions: analysis.apiDefinitions, serverOutputFile: serverOutput, clientOutputFile: clientOutput)
+        let generator = Generator(potentiallyUsedImports: analysis.potentiallyUsedImports, apiDefinitions: analysis.apiDefinitions, serverOutputFile: serverOutput, clientOutputFile: clientOutput)
         try generator.run()
         
         print("Generated server code was written to '\(serverOutput)'.")
