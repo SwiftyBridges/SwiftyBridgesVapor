@@ -21,6 +21,25 @@ struct BridgeBuilder: ParsableCommand {
     @Option(help: "Generated target Swift file for the client")
     var clientOutput: String = "ClientGenerated.swift"
     
+    @Flag(name: [.short, .long], help: "Reduce the output of the command")
+    var quiet: Bool = false
+    
+    /// If this option and `linkDestinationPath` are set, the command tries to create a relative symbolic link at this path
+    @Option(help: .hidden)
+    var linkPath: String?
+    
+    /// If this option and `linkPath` are set, the command tries to create a relative symbolic link pointing to this destination
+    @Option(help: .hidden)
+    var linkDestinationPath: String?
+    
+    /// If the creation of the symbolic link is successful, this message will be printed to the output
+    @Option(help: .hidden)
+    var linkSuccessMessage: String?
+    
+    /// If the creation of the symbolic link fails because of missing permissions, this message will be printed to the output
+    @Option(help: .hidden)
+    var linkPermissionFailureMessage: String?
+    
     mutating func run() throws {
         let analysis = Analysis(sourceDirectory: sourceDirectory)
         analysis.run()
@@ -28,9 +47,23 @@ struct BridgeBuilder: ParsableCommand {
         let generator = Generator(potentiallyUsedImports: analysis.potentiallyUsedImports, apiDefinitions: analysis.apiDefinitions, serverOutputFile: serverOutput, clientOutputFile: clientOutput)
         try generator.run()
         
-        print("Generated server code was written to '\(serverOutput)'.")
-        print("Generated client code was written to '\(clientOutput)'.")
-        print("Please add the source files to the corresponding app.")
+        if !quiet {
+            print("Generated server code was written to '\(serverOutput)'.")
+            print("Generated client code was written to '\(clientOutput)'.")
+            print("Please add the source files to the corresponding app.")
+        }
+        
+        if
+            let linkPath = linkPath,
+            let linkDestinationPath = linkDestinationPath
+        {
+            SymbolicLinkCreator.tryToCreateSymbolicLink(
+                atPath: linkPath,
+                toDestinationPath: linkDestinationPath,
+                successMessage: linkSuccessMessage,
+                permissionFailureMessage: linkPermissionFailureMessage
+            )
+        }
     }
 }
 
