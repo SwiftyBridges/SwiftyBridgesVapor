@@ -2,8 +2,8 @@
 
 import Foundation
 import SwiftyBridgesClient
-{% for import in conditionalImports %}
 
+{% for import in conditionalImports %}
 #if canImport({{ import }})
     import {{ import }}
 #endif
@@ -13,7 +13,6 @@ import SwiftyBridgesClient
 {{ apiType.leadingTrivia }}
 class {{ apiType.name }}: SwiftyBridgesClient.API {
     {% for method in apiType.publicMethods %}
-
     {{ method.leadingTrivia }}
     func {{ method.name }}{{ method.clientMethodSignature }} {
         let call = {{ method.generatedTypeName }}({% for parameter in method.parameters %}
@@ -23,8 +22,8 @@ class {{ apiType.name }}: SwiftyBridgesClient.API {
     }
     {% endfor %}
 }
-
 {% endfor %}
+
 {% for apiType in apiDefinitions %}
 extension {{ apiType.name }} {
     {% for method in apiType.publicMethods %}
@@ -39,8 +38,6 @@ extension {{ apiType.name }} {
         {% endfor %}
         {% include "Templates/CallTypeCodingKeys.swift.stencil" %}
     }
-
     {% endfor %}
 }
-
 {% endfor %}

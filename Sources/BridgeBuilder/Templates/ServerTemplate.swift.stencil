@@ -3,10 +3,17 @@
 import SwiftyBridges
 import Vapor
 {% for import in conditionalImports %}
-
 #if canImport({{ import }})
     import {{ import }}
 #endif
+{% endfor %}
+
+{% for warning in serverCodeWarnings %}
+#warning(
+###"""
+{{ warning }}
+"""###
+)
 {% endfor %}
 
 {% for apiType in apiDefinitions %}
@@ -39,8 +46,6 @@ extension {{ apiType.name }} {
             {% if method.returnsVoid %}.map { NoReturnValue() }{% endif %}
         }
     }
-
     {% endfor %}
 }
-
 {% endfor %}

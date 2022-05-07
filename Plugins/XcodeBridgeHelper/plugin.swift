@@ -9,7 +9,7 @@ import PackagePlugin
 /// cd $WORKSPACE_PATH
 /// swift package --disable-sandbox xcode-bridge-helper
 /// ```
-///
+/// Also consider making the scheme shared and committing it to git (it is located under .swiftpm/xcode in the package folder) so that the script is already configured for other people or when freshly cloning the project.
 @main struct XcodeBridgeHelper: CommandPlugin {
     func performCommand(context: PluginContext, arguments: [String]) async throws {
         guard ProcessInfo.processInfo.environment["SCHEME_NAME"] != nil else {
@@ -101,6 +101,7 @@ enum PluginError: Error, CustomStringConvertible {
                 cd $WORKSPACE_PATH
                 swift package --disable-sandbox xcode-bridge-helper
                 
+                Also consider making the scheme shared and committing it to git (it is located under .swiftpm/xcode in the package folder) so that the script is already configured for other people or when freshly cloning the project.
                 """
         case .couldNotReadBuildProductsPath:
             return """

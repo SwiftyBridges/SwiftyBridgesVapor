@@ -26,7 +26,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", exact: "0.50600.1"),
         .package(url: "https://github.com/stencilproject/Stencil.git", .upToNextMinor(from: "0.14.1")),
-        .package(url: "https://github.com/SwiftGen/StencilSwiftKit", from: "2.8.0"),
     ],
     targets: [
         .target(
@@ -42,7 +41,6 @@ let package = Package(
                 .product(name: "Stencil", package: "Stencil"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxParser", package: "swift-syntax"),
-                .product(name: "StencilSwiftKit", package: "StencilSwiftKit"),
                 "lib_InternalSwiftSyntaxParser",
             ],
             resources: [
@@ -79,6 +77,7 @@ let package = Package(
                         cd $WORKSPACE_PATH
                         swift package --disable-sandbox xcode-bridge-helper
                         
+                        Also consider making the scheme shared and committing it to git (it is located under .swiftpm/xcode in the package folder) so that the script is already configured for other people or when freshly cloning the project.
                         """
                 )
             )

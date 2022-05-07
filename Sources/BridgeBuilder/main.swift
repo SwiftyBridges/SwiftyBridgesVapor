@@ -40,11 +40,21 @@ struct BridgeBuilder: ParsableCommand {
     @Option(help: .hidden)
     var linkPermissionFailureMessage: String?
     
+    /// Warnings to include into the generated server code. Precent encoding is removed from these strings before adding them to the source.
+    @Option(name: .customLong("warning"), parsing: .singleValue, help: .hidden)
+    var warnings: [String] = []
+    
     mutating func run() throws {
         let analysis = Analysis(sourceDirectory: sourceDirectory)
         analysis.run()
         
-        let generator = Generator(potentiallyUsedImports: analysis.potentiallyUsedImports, apiDefinitions: analysis.apiDefinitions, serverOutputFile: serverOutput, clientOutputFile: clientOutput)
+        let generator = Generator(
+            potentiallyUsedImports: analysis.potentiallyUsedImports,
+            apiDefinitions: analysis.apiDefinitions,
+            serverCodeWarnings: warnings.compactMap { $0.removingPercentEncoding },
+            serverOutputFile: serverOutput,
+            clientOutputFile: clientOutput
+        )
         try generator.run()
         
         if !quiet {
