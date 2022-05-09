@@ -26,7 +26,7 @@ public protocol APIMethodCall: Content {
     static var methodID: APIMethodID { get }
     
     /// Executes the method call on the API definition
-    /// - Returns: A future for the return value of the API method
+    /// - Returns: The return value of the API method
     func call(on api: API) async throws -> ReturnType
 }
 

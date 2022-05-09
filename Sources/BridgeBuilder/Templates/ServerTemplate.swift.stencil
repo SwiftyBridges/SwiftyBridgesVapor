@@ -36,14 +36,11 @@ extension {{ apiType.name }} {
         {% endfor %}
         {% include "Templates/CallTypeCodingKeys.swift.stencil" %}
         func call(on api: API) async throws -> {{ method.returnType.codableEffectiveReturnTypeName }} {
-            //{% if not method.returnType.isFuture %}api.request.eventLoop.future({% endif %}
-            {% if method.mayThrow or method.returnType.isFuture %}try {% endif %}{% if method.isAsync or method.returnType.isFuture %}await {% endif %}api.{{ method.name }}(
+            {% if method.mayThrow %}try {% endif %}{% if method.isAsync %}await {% endif %}api.{{ method.name }}(
                 {% for parameter in method.parameters %}
                 {% if parameter.label %}{{ parameter.label }}: {% endif %}parameter{{ forloop.counter0 }}{% if not forloop.last %},{% endif %}
                 {% endfor %}
             )
-            {% if method.returnType.isFuture %}.get(){% endif %}
-            //{% if not method.returnType.isFuture %}){% endif %}
             {% if method.returnsVoid %}return NoReturnValue(){% endif %}
         }
     }

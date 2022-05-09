@@ -164,14 +164,6 @@ final class Analysis: SyntaxVisitor {
         }
     }
     
-    private func isVoid(_ typeSyntax: SimpleTypeIdentifierSyntax) -> Bool {
-        if typeSyntax.withoutTrivia().name.description == "Void" {
-            return true
-        } else {
-            return false
-        }
-    }
-    
     private func isInlinable(_ function: FunctionDeclSyntax) -> Bool {
         function.attributes?.compactMap { $0.as(AttributeSyntax.self) }
         .contains { $0.attributeName.withoutTrivia().description == "inlinable" }
@@ -180,29 +172,10 @@ final class Analysis: SyntaxVisitor {
     
     private func returnType(of node: FunctionDeclSyntax) -> MethodDefinition.ReturnType {
         if let type = node.signature.output?.returnType {
-            if let simpleSyntax = type.as(SimpleTypeIdentifierSyntax.self) {
-                if simpleSyntax.name.description == "EventLoopFuture" {
-                    guard let valueType = simpleSyntax.genericArgumentClause?.arguments.first?.argumentType else {
-                        
-                        fatalError("Could not parse return type of function \(node.signature.description)")
-                    }
-                    
-                    if isVoid(valueType) {
-                        return .voidEventLoopFuture
-                    } else {
-                        return .codableEventLoopFuture(valueTypeName: valueType.description)
-                    }
-                } else if isVoid(simpleSyntax) {
-                    return .void
-                } else {
-                    return .codable(typeName: simpleSyntax.withoutTrivia().description)
-                }
+            if isVoid(type) {
+                return .void
             } else {
-                if isVoid(type) {
-                    return .void
-                } else {
-                    return .codable(typeName: type.withoutTrivia().description)
-                }
+                return .codable(typeName: type.withoutTrivia().description)
             }
         } else {
             return .void
