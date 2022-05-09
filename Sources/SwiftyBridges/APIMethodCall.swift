@@ -27,7 +27,7 @@ public protocol APIMethodCall: Content {
     
     /// Executes the method call on the API definition
     /// - Returns: A future for the return value of the API method
-    func call(on api: API) throws -> EventLoopFuture<ReturnType>
+    func call(on api: API) async throws -> ReturnType
 }
 
 /// This is used as a replacement for the `Void` return type in generated code to prevent compiler errors because `Void` does not conform to `Codable`
@@ -43,35 +43,34 @@ public struct NoReturnValue: Codable {
 /// This type wraps types conforming to `APIMethodCall` so that calling code can decode API call requests and apply the API call iteself without knowing the return type at compile time
 public struct AnyAPIMethod<API: APIDefinition> {
     /// A function type that takes an instance of an API definition, calls an API method with the parameters decoded from the request and encodes the return value as a `Response`
-    typealias MethodCall = (API) throws -> EventLoopFuture<Response>
+    typealias MethodCall = (API) async throws -> Response
     
     /// The ID used to identify this specific API method
     let methodID: APIMethodID
     
     /// A closure that decodes the method parameters from the request and returns a preconfigured `MethodCall`
-    private let decodeCallAction: (Request) -> EventLoopFuture<MethodCall>
+    private let decodeCallAction: (Request) async throws -> MethodCall
     
     /// Creates an instance with a specific type conforming to `APIMethodCall
     /// - Parameters:
     ///   - method: The request that was received for the API method call
     public init<MethodCallType: APIMethodCall>(method: MethodCallType.Type) where MethodCallType.API == API {
         methodID = method.methodID
-        decodeCallAction = { (request: Request) -> EventLoopFuture<MethodCall> in
-            return MethodCallType.decodeRequest(request).map { (call: MethodCallType) -> MethodCall in
-                func callAPIMethodAndEncodeReturnValue(api: API) throws -> EventLoopFuture<Response> {
-                    try call.call(on: api).flatMap { $0.encodeResponse(for: request) }
-                }
-                
-                return callAPIMethodAndEncodeReturnValue(api:)
+        decodeCallAction = { (request: Request) async throws -> MethodCall in
+            let call = try await MethodCallType.decodeRequest(request)
+            func callAPIMethodAndEncodeReturnValue(api: API) async throws -> Response {
+                try await call.call(on: api).encodeResponse(for: request)
             }
+            
+            return callAPIMethodAndEncodeReturnValue(api:)
         }
     }
     
     /// Decodes the parameters from the given request and returns a preconfigured method call
     /// - Parameter request: A request encoding an API method call
     /// - Returns: A closure that takes an instance of an API definition, calls the API method represented by this instance with the parameters decoded from `request` and encodes the return value as a `Response`
-    func decodeCall(from request: Request) -> EventLoopFuture<MethodCall> {
-        decodeCallAction(request)
+    func decodeCall(from request: Request) async throws -> MethodCall {
+        try await decodeCallAction(request)
     }
 }
 
@@ -79,9 +78,9 @@ private extension Encodable {
     /// Encodes `Encodable` as  a `Response`.
     ///
     /// - Parameter request: The request for this response
-    /// - Returns: A future for the encoded response
-    func encodeResponse(for request: Request) -> EventLoopFuture<Response> {
-        EncodingHelper(self).encodeResponse(for: request)
+    /// - Returns: The encoded response
+    func encodeResponse(for request: Request) async throws -> Response {
+        try await (EncodingHelper(self) as AsyncResponseEncodable).encodeResponse(for: request)
     }
 }
 

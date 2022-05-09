@@ -13,7 +13,7 @@ import Vapor
 /// For instructions how to use it, see `README.md`.
 public class APIRouter {
     /// Stores `APIRegistration` instances keyed by the name of the API definition type
-    private var registrationByTypeName: [String: Responder] = [:]
+    private var registrationByTypeName: [String: AsyncResponder] = [:]
     
     public init() {}
 }
@@ -34,16 +34,16 @@ extension APIRouter {
     /// Must be called inside a POST route to correctly handle API method requests.
     /// - Parameter request: The POST request sent by SwiftyBridgesClient
     /// - Returns: A response to be returned by the POST route
-    public func handle(_ request: Request) -> EventLoopFuture<Response> {
+    public func handle(_ request: Request) async throws -> Response {
         guard let apiTypeName = request.headers["API-Type"].first else {
-            return request.eventLoop.makeFailedFuture(Abort(.badRequest))
+            throw Abort(.badRequest)
         }
         
         guard let registration = registrationByTypeName[apiTypeName] else {
             print("API definition type '\(apiTypeName)' has not been registered with this APIRouter.")
-            return request.eventLoop.makeFailedFuture(Abort(.badRequest, reason: "API definition '\(apiTypeName)' has not been registered on the server"))
+            throw Abort(.badRequest, reason: "API definition '\(apiTypeName)' has not been registered on the server")
         }
         
-        return registration.respond(to: request)
+        return try await registration.respond(to: request)
     }
 }

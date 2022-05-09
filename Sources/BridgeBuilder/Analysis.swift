@@ -114,10 +114,7 @@ final class Analysis: SyntaxVisitor {
             mayThrow = false
         }
         
-        guard node.signature.asyncOrReasyncKeyword == nil else {
-            // Async methods are not yet supported
-            return .skipChildren
-        }
+        let isAsync = node.signature.asyncOrReasyncKeyword?.text == "async"
         
         let returnType = self.returnType(of: node)
         
@@ -130,6 +127,7 @@ final class Analysis: SyntaxVisitor {
             leadingTrivia: leadingTrivia ?? "",
             isInlinable: isInlinable,
             parameters: parameters,
+            isAsync: isAsync,
             mayThrow: mayThrow,
             returnType: returnType
         )

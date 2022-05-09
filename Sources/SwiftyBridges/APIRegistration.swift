@@ -19,7 +19,7 @@ struct APIRegistration<API: APIDefinition> {
     }
 }
 
-extension APIRegistration: Responder {
+extension APIRegistration: AsyncResponder {
     /// Handles an API method call request for `API` from start to finish
     ///
     /// * Applies the correct middlewares
@@ -29,19 +29,19 @@ extension APIRegistration: Responder {
     ///
     /// - Parameter request: The method call request
     /// - Returns: The result of the method call as a `Response`
-    func respond(to request: Request) -> EventLoopFuture<Response> {
+    func respond(to request: Request) async throws -> Response {
         guard let methodID = request.headers["API-Method"].first else {
-            return request.eventLoop.makeFailedFuture(Abort(.badRequest))
+            throw Abort(.badRequest)
         }
         
         guard let method = methodByID[APIMethodID(rawValue: methodID)] else {
             print("WARNING: API method call '\(methodID)' was not found. Please make sure that you have added the generated source code to the server app.")
-            return request.eventLoop.makeFailedFuture(Abort(.badRequest, reason: "API method call '\(methodID)' was not found"))
+            throw Abort(.badRequest, reason: "API method call '\(methodID)' was not found")
         }
         
         let methodCallResponder = MethodCallResponder(method: method)
         let completeResponder = API.middlewares.makeResponder(chainingTo: methodCallResponder)
-        return completeResponder.respond(to: request)
+        return try await completeResponder.respond(to: request).get()
     }
 }
 
@@ -50,19 +50,10 @@ struct MethodCallResponder<API: APIDefinition> {
     var method: AnyAPIMethod<API>
 }
 
-extension MethodCallResponder: Responder {
-    func respond(to request: Request) -> EventLoopFuture<Response> {
-        do {
-            let api = try API(request: request)
-            return method.decodeCall(from: request).flatMap { methodCall in
-                do {
-                    return try methodCall(api)
-                } catch {
-                    return request.eventLoop.makeFailedFuture(error)
-                }
-            }
-        } catch {
-            return request.eventLoop.makeFailedFuture(error)
-        }
+extension MethodCallResponder: AsyncResponder {
+    func respond(to request: Request) async throws -> Response {
+        let api = try API(request: request)
+        let methodCall = try await method.decodeCall(from: request)
+        return try await methodCall(api)
     }
 }

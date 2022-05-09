@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swift-server/async-http-client.git",
       "state" : {
-        "revision" : "8fa7f082b155ea325bcf7b2dbffaf81d4eea1ae4",
-        "version" : "1.5.1"
+        "revision" : "24425989dadab6d6e4167174791a23d4e2a6d0c3",
+        "version" : "1.10.0"
       }
     },
     {
@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-nio.git",
       "state" : {
-        "revision" : "fb48bdd8279799f655da5f8b4e0a21430eca6012",
-        "version" : "2.32.3"
+        "revision" : "124119f0bb12384cef35aa041d7c3a686108722d",
+        "version" : "2.40.0"
       }
     },
     {
@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-nio-http2.git",
       "state" : {
-        "revision" : "dbfc8fcd1a0cc4d7254a060501120d378e91f16c",
-        "version" : "1.18.3"
+        "revision" : "72bcaf607b40d7c51044f65b0f5ed8581a911832",
+        "version" : "1.21.0"
       }
     },
     {
@@ -158,8 +158,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-nio-transport-services.git",
       "state" : {
-        "revision" : "e7f5278a26442dc46783ba7e063643d524e414a0",
-        "version" : "1.11.3"
+        "revision" : "1a4692acb88156e3da1b0c6732a8a38b2a744166",
+        "version" : "1.12.0"
       }
     },
     {
@@ -176,8 +176,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/vapor.git",
       "state" : {
-        "revision" : "f9f68e5f417ef1de56222a80079a72605fbfde8d",
-        "version" : "4.48.8"
+        "revision" : "b05266f863ee93eeff4b6d075364ccc8f81bbc1e",
+        "version" : "4.57.0"
       }
     },
     {

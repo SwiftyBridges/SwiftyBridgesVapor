@@ -16,6 +16,7 @@ struct MethodDefinition {
     
     var isInlinable: Bool
     var parameters: [Parameter]
+    var isAsync: Bool
     var mayThrow: Bool
     var returnType: ReturnType
 }
@@ -30,6 +31,7 @@ extension MethodDefinition: CustomReflectable {
                 "leadingTrivia": leadingTrivia,
                 "isInlinable": isInlinable,
                 "parameters": parameters,
+                "isAsync": isAsync,
                 "mayThrow": mayThrow,
                 "returnType": returnType,
                 "clientMethodSignature": clientMethodSignature,
