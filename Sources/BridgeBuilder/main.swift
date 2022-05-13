@@ -51,6 +51,7 @@ struct BridgeBuilder: ParsableCommand {
         let generator = Generator(
             potentiallyUsedImports: analysis.potentiallyUsedImports,
             apiDefinitions: analysis.apiDefinitions,
+            clientStructTemplates: analysis.clientStructTemplates,
             serverCodeWarnings: warnings.compactMap { $0.removingPercentEncoding },
             serverOutputFile: serverOutput,
             clientOutputFile: clientOutput

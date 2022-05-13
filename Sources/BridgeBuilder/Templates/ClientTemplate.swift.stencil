@@ -24,6 +24,16 @@ class {{ apiType.name }}: SwiftyBridgesClient.API {
 }
 {% endfor %}
 
+{% for structTemplate in clientStructTemplates %}
+{{ structTemplate.leadingTrivia }}
+struct {{ structTemplate.name }}: Codable{% if structTemplate.isFluentModel %}, SwiftyBridgesClient.FluentModelStruct{% endif %} {
+    {% for property in structTemplate.instanceProperties %}
+    {{ property.leadingTrivia }}
+    {{ property.clientPropertyDeclaration }}
+    {% endfor %}
+}
+{% endfor %}
+
 {% for apiType in apiDefinitions %}
 extension {{ apiType.name }} {
     {% for method in apiType.publicMethods %}
