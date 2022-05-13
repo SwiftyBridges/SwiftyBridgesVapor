@@ -242,7 +242,7 @@ final class Analysis: SyntaxVisitor {
         
         let parameters = node.signature.input.parameterList.map(MethodDefinition.Parameter.init)
         
-        let methodDeclaration = MethodDefinition(
+        let methodDefinition = MethodDefinition(
             name: node.identifier.text,
             leadingTrivia: leadingTrivia ?? "",
             isInlinable: isInlinable,
@@ -252,7 +252,7 @@ final class Analysis: SyntaxVisitor {
             returnType: returnType
         )
         
-        currentDeclaration.publicMethods.append(methodDeclaration)
+        currentDeclaration.publicMethods.append(methodDefinition)
         self.currentDefinition = currentDeclaration
         
         return .skipChildren

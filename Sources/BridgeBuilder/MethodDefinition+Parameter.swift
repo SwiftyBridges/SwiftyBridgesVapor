@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  File
-//
-//  Created by Stephen Kockentiedt on 18.09.21.
-//
-
 import Foundation
 import SwiftSyntax
 
