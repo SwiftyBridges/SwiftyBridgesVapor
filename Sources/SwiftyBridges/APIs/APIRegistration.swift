@@ -52,7 +52,7 @@ struct MethodCallResponder<API: APIDefinition> {
 
 extension MethodCallResponder: AsyncResponder {
     func respond(to request: Request) async throws -> Response {
-        let api = try await API(request: request)
+        let api = try await API(req: request)
         let methodCall = try await method.decodeCall(from: request)
         return try await methodCall(api)
     }

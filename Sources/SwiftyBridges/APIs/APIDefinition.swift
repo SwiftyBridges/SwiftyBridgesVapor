@@ -11,8 +11,8 @@ import Vapor
 public protocol APIDefinition {
     /// For every method call by the client, a new instance of the API definition struct is created
     /// - Parameters:
-    ///   - request: The request that was received for the API method call
-    init(request: Request) async throws
+    ///   - req: The request that was received for the API method call
+    init(req: Request) async throws
     
     /// Optionally implement this property to determine the middlewares that shall be used for every API method call to this API definition
     ///
