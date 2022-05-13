@@ -70,7 +70,7 @@ final class Analysis: SyntaxVisitor {
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        if isAPIDefinition(node) {
+        if node.inherits(from: "APIDefinition") {
             guard
                 currentDefinition == nil,
                 currentClientStructTemplate == nil
@@ -83,7 +83,7 @@ final class Analysis: SyntaxVisitor {
             currentDefinition = APIDefinition(name: node.identifier.text, leadingTrivia: leadingTrivia ?? "", structSyntax: node)
             
             return .visitChildren
-        } else if isClientStructTemplate(node) {
+        } else if node.inherits(from: "GenerateClientStruct") {
             guard
                 currentDefinition == nil,
                 currentClientStructTemplate == nil
@@ -107,7 +107,7 @@ final class Analysis: SyntaxVisitor {
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        guard isClientStructTemplate(node) else {
+        guard node.inherits(from: "GenerateClientStruct") else {
             return .skipChildren
         }
         
@@ -165,7 +165,7 @@ final class Analysis: SyntaxVisitor {
     }
     
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        guard let currentClientStructTemplate = currentClientStructTemplate else {
+        guard currentClientStructTemplate != nil else {
             return .skipChildren
         }
         
@@ -219,7 +219,7 @@ final class Analysis: SyntaxVisitor {
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         guard
             var currentDeclaration = currentDefinition,
-            isPublic(node)
+            node.isPublic
         else {
             return .skipChildren
         }
@@ -238,14 +238,12 @@ final class Analysis: SyntaxVisitor {
         
         let returnType = self.returnType(of: node)
         
-        let isInlinable = self.isInlinable(node)
-        
         let parameters = node.signature.input.parameterList.map(MethodDefinition.Parameter.init)
         
         let methodDefinition = MethodDefinition(
             name: node.identifier.text,
             leadingTrivia: leadingTrivia ?? "",
-            isInlinable: isInlinable,
+            isInlinable: node.isInlinable,
             parameters: parameters,
             isAsync: isAsync,
             mayThrow: mayThrow,
@@ -258,61 +256,9 @@ final class Analysis: SyntaxVisitor {
         return .skipChildren
     }
     
-    #warning("TODO: Make the next three extensions on the corresponsing nodes:")
-    
-    private func isAPIDefinition(_ node: StructDeclSyntax) -> Bool {
-        guard let inheritedTypeCollection = node.inheritanceClause?.inheritedTypeCollection else {
-            return false
-        }
-        return inheritedTypeCollection.contains { typeSyntax in
-            typeSyntax.typeName.firstToken?.text == "APIDefinition"
-        }
-    }
-    
-    private func isClientStructTemplate(_ node: StructDeclSyntax) -> Bool {
-        guard let inheritedTypeCollection = node.inheritanceClause?.inheritedTypeCollection else {
-            return false
-        }
-        return inheritedTypeCollection.contains { typeSyntax in
-            typeSyntax.typeName.firstToken?.text == "GenerateClientStruct"
-        }
-    }
-    
-    private func isClientStructTemplate(_ node: ClassDeclSyntax) -> Bool {
-        guard let inheritedTypeCollection = node.inheritanceClause?.inheritedTypeCollection else {
-            return false
-        }
-        return inheritedTypeCollection.contains { typeSyntax in
-            typeSyntax.typeName.firstToken?.text == "GenerateClientStruct"
-        }
-    }
-    
-    private func isPublic(_ node: FunctionDeclSyntax) -> Bool {
-        node.modifiers?.contains { $0.name.text == "public" } ?? false
-    }
-    
-    private func isVoid(_ typeSyntax: TypeSyntax) -> Bool {
-        if
-            let tupleSyntax = typeSyntax.as(TupleTypeSyntax.self),
-            tupleSyntax.elements.count == 0
-        {
-            return true
-        } else if typeSyntax.withoutTrivia().description == "Void" {
-            return true
-        } else {
-            return false
-        }
-    }
-    
-    private func isInlinable(_ function: FunctionDeclSyntax) -> Bool {
-        function.attributes?.compactMap { $0.as(AttributeSyntax.self) }
-        .contains { $0.attributeName.withoutTrivia().description == "inlinable" }
-        ?? false
-    }
-    
     private func returnType(of node: FunctionDeclSyntax) -> MethodDefinition.ReturnType {
         if let type = node.signature.output?.returnType {
-            if isVoid(type) {
+            if type.isVoid {
                 return .void
             } else {
                 return .codable(typeName: type.withoutTrivia().description)
@@ -326,8 +272,43 @@ final class Analysis: SyntaxVisitor {
 extension ClassDeclSyntax {
     func inherits(from typeName: String) -> Bool {
         self.inheritanceClause?.inheritedTypeCollection.contains(where: { syntax in
-            syntax.typeName.description == typeName
+            syntax.typeName.firstToken?.text == typeName
         }) ?? false
+    }
+}
+
+extension FunctionDeclSyntax {
+    var isInlinable: Bool {
+        self.attributes?.compactMap { $0.as(AttributeSyntax.self) }
+        .contains { $0.attributeName.withoutTrivia().description == "inlinable" }
+        ?? false
+    }
+    
+    var isPublic: Bool {
+        self.modifiers?.contains { $0.name.text == "public" } ?? false
+    }
+}
+
+extension StructDeclSyntax {
+    func inherits(from typeName: String) -> Bool {
+        self.inheritanceClause?.inheritedTypeCollection.contains(where: { syntax in
+            syntax.typeName.firstToken?.text == typeName
+        }) ?? false
+    }
+}
+
+extension TypeSyntax {
+    var isVoid: Bool {
+        if
+            let tupleSyntax = self.as(TupleTypeSyntax.self),
+            tupleSyntax.elements.count == 0
+        {
+            return true
+        } else if self.withoutTrivia().description == "Void" {
+            return true
+        } else {
+            return false
+        }
     }
 }
 
