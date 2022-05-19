@@ -74,7 +74,11 @@ extension MethodDefinition: CustomReflectable {
         }
             .joined(separator: "_")
         
-        return "Call_\(name)_\(parameterPart)"
+        if parameterPart.isEmpty {
+            return "Call_\(name)"
+        } else {
+            return "Call_\(name)_\(parameterPart)"
+        }
     }
     
     var returnsVoid: Bool {
