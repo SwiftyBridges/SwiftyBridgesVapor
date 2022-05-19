@@ -19,6 +19,8 @@ struct MethodDefinition {
     var isAsync: Bool
     var mayThrow: Bool
     var returnType: ReturnType
+    var filePath: String
+    var lineNumber: Int
 }
 
 extension MethodDefinition: CustomReflectable {
@@ -34,6 +36,8 @@ extension MethodDefinition: CustomReflectable {
                 "isAsync": isAsync,
                 "mayThrow": mayThrow,
                 "returnType": returnType,
+                "filePath": filePath,
+                "lineNumber": lineNumber,
                 "clientMethodSignature": clientMethodSignature,
                 "methodID": methodID,
                 "generatedTypeName": generatedTypeName,

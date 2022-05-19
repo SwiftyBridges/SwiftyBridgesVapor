@@ -25,6 +25,12 @@ final class Analysis: SyntaxVisitor {
     /// The type conforming to `GenerateClientStruct` being currently parsed
     private var currentClientStructTemplate: ClientStructTemplate?
     
+    /// The path of the file currently analyzed
+    private var currentFilePath = ""
+    
+    /// The converter needed to get the line number of definitions
+    private var sourceLocationConverter = SourceLocationConverter(file: "", source: "")
+    
     /// Default initializer
     /// - Parameter sourceDirectory: The path to a directory containing the Swift files to be parsed
     init(sourceDirectory: String) {
@@ -53,6 +59,9 @@ final class Analysis: SyntaxVisitor {
     func analyze(file path: URL) throws {
         let sourceFile = try SyntaxParser.parse(path)
         self.importsOfCurrentFile = []
+        let filePath = path.standardized.absoluteURL.path
+        self.currentFilePath = filePath
+        self.sourceLocationConverter = .init(file: filePath, tree: sourceFile)
         self.walk(sourceFile)
     }
 
@@ -240,6 +249,8 @@ final class Analysis: SyntaxVisitor {
         
         let parameters = node.signature.input.parameterList.map(MethodDefinition.Parameter.init)
         
+        let functionNameSourceRange = node.identifier.sourceRange(converter: sourceLocationConverter)
+        
         let methodDefinition = MethodDefinition(
             name: node.identifier.text,
             leadingTrivia: leadingTrivia ?? "",
@@ -247,7 +258,9 @@ final class Analysis: SyntaxVisitor {
             parameters: parameters,
             isAsync: isAsync,
             mayThrow: mayThrow,
-            returnType: returnType
+            returnType: returnType,
+            filePath: currentFilePath,
+            lineNumber: functionNameSourceRange.start.line ?? 1
         )
         
         currentDeclaration.publicMethods.append(methodDefinition)

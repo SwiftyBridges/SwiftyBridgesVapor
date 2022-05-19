@@ -16,6 +16,20 @@ import Vapor
 )
 {% endfor %}
 
+private func checkIfAllAPITypesAreCodable() {
+{% for apiType in apiDefinitions %}
+{% for method in apiType.publicMethods %}
+    {% for parameter in method.parameters %}
+#sourceLocation(file: "{{ method.filePath }}", line: {{ method.lineNumber }})
+    let _: APITypesMustBeCodable<{{ parameter.typeName }}>
+    {% endfor %}
+#sourceLocation(file: "{{ method.filePath }}", line: {{ method.lineNumber }})
+    let _: APITypesMustBeCodable<{{ method.returnType.codableEffectiveReturnTypeName }}>
+{% endfor %}
+{% endfor %}
+#sourceLocation()
+}
+
 {% for apiType in apiDefinitions %}
 extension {{ apiType.name }} {
     static let remotelyCallableMethods: [AnyAPIMethod<{{ apiType.name }}>] = [
@@ -47,3 +61,5 @@ extension {{ apiType.name }} {
     {% endfor %}
 }
 {% endfor %}
+
+private struct APITypesMustBeCodable<T: Codable> {}
