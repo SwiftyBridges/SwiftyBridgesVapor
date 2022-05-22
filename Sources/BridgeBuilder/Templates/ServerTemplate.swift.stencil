@@ -17,6 +17,7 @@ import Vapor
 {% endfor %}
 
 private func checkIfAllAPITypesAreCodable() {
+#sourceLocation(file: "", line: 1)
 {% for apiType in apiDefinitions %}
 {% for method in apiType.publicMethods %}
     {% for parameter in method.parameters %}
