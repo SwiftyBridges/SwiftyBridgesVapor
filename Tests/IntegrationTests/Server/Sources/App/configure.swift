@@ -9,6 +9,10 @@ let apiRouter = APIRouter()
 public func configure(_ app: Application) throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
+    
+    app.middleware = .init()
+    app.middleware.use(APILoggingMiddleware())
+    app.middleware.use(ErrorMiddleware.default(environment: app.environment))
 
     app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
 
