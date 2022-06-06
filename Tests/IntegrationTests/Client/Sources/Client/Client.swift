@@ -2,33 +2,6 @@ import Foundation
 
 let serverURL = URL(string: "http://127.0.0.1:8080/api")!
 
-extension Person: Equatable {
-    static func == (lhs: Person, rhs: Person) -> Bool {
-        lhs.id == rhs.id
-        && lhs.name == rhs.name
-        && lhs.dogs == rhs.dogs
-        && lhs.youngerSiblings == rhs.youngerSiblings
-    }
-}
-
-extension Dog: Equatable {
-    static func == (lhs: Dog, rhs: Dog) -> Bool {
-        lhs.id == rhs.id
-        && lhs.name == rhs.name
-        && lhs.owner == rhs.owner
-        && lhs.sitter == rhs.sitter
-        && lhs.bestCatFriend == rhs.bestCatFriend
-    }
-}
-
-extension Cat: Equatable {
-    static func == (lhs: Cat, rhs: Cat) -> Bool {
-        lhs.id == rhs.id
-        && lhs.name == rhs.name
-        && lhs.bestDogFriend == rhs.bestDogFriend
-    }
-}
-
 @main
 struct Client {
     static func main() async throws {

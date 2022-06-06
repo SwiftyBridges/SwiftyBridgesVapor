@@ -47,7 +47,7 @@ struct Name: Codable, GenerateClientStruct {
     var lastName: String
 }
 
-final class Person: Model, Content, GenerateClientStruct {
+final class Person: Model, Content, GenerateClientStruct, GenerateEquatable {
     static let schema = "persons"
 
     @ID(key: .id)
@@ -70,7 +70,7 @@ final class Person: Model, Content, GenerateClientStruct {
     }
 }
 
-final class Dog: Model, Content, GenerateClientStruct {
+final class Dog: Model, Content, GenerateClientStruct, GenerateEquatable {
     static let schema = "dogs"
 
     @ID(key: .id)
@@ -103,7 +103,7 @@ final class Dog: Model, Content, GenerateClientStruct {
     }
 }
 
-final class Cat: Model, Content, GenerateClientStruct {
+final class Cat: Model, Content, GenerateClientStruct, GenerateEquatable {
     static let schema = "cats"
     
     @ID(key: .id)

@@ -13,6 +13,9 @@ final class Analysis: SyntaxVisitor {
     /// Contains infos about the found types conforming to `GenerateClientStruct` after `run()` has finished
     var clientStructTemplates: [ClientStructTemplate] = []
     
+    /// Contains a list of extensions that shall be generated to signal protocol conformance
+    var protocolConformanceExtensions: [ProtocolConformance] = []
+    
     /// The path to a directory containing the Swift files to be parsed
     private let sourceDirectory: String
 
@@ -79,6 +82,10 @@ final class Analysis: SyntaxVisitor {
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+        if node.inherits(from: "GenerateEquatable") {
+            protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
+        }
+        
         if node.inherits(from: "APIDefinition") {
             guard
                 currentDefinition == nil,
@@ -116,6 +123,10 @@ final class Analysis: SyntaxVisitor {
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+        if node.inherits(from: "GenerateEquatable") {
+            protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
+        }
+        
         guard node.inherits(from: "GenerateClientStruct") else {
             return .skipChildren
         }
