@@ -68,7 +68,10 @@ extension MethodDefinition: CustomReflectable {
                 .replacingOccurrences(of: ".", with: "_")
                 .replacingOccurrences(of: "<", with: "_")
                 .replacingOccurrences(of: ">", with: "_")
+                .replacingOccurrences(of: "[", with: "_")
+                .replacingOccurrences(of: "]", with: "_")
                 .replacingOccurrences(of: ",", with: "_")
+                .replacingOccurrences(of: "?", with: "_")
                 .replacingOccurrences(of: " ", with: "")
             return "\(parameter.label ?? "")_\(typeName)"
         }
