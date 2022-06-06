@@ -70,7 +70,7 @@ final class Person: Model, Content, GenerateClientStruct, GenerateEquatable {
     }
 }
 
-final class Dog: Model, Content, GenerateClientStruct, GenerateEquatable {
+final class Dog: Model, Content, GenerateClientStruct, GenerateHashable {
     static let schema = "dogs"
 
     @ID(key: .id)

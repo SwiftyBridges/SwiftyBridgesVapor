@@ -86,6 +86,10 @@ final class Analysis: SyntaxVisitor {
             protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
         }
         
+        if node.inherits(from: "GenerateHashable") {
+            protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Hashable"))
+        }
+        
         if node.inherits(from: "APIDefinition") {
             guard
                 currentDefinition == nil,
@@ -125,6 +129,10 @@ final class Analysis: SyntaxVisitor {
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         if node.inherits(from: "GenerateEquatable") {
             protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
+        }
+        
+        if node.inherits(from: "GenerateHashable") {
+            protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Hashable"))
         }
         
         guard node.inherits(from: "GenerateClientStruct") else {

@@ -87,6 +87,9 @@ struct Client {
             fatalError("test() should have thrown an error")
         } catch {}
         
+        // Test if `GenerateHashable` works:
+        _ = [Dog: String]()
+        
         print("\nAll tests passed!!!")
     }
 }
