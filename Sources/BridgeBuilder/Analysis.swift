@@ -214,31 +214,16 @@ final class Analysis: SyntaxVisitor {
             return .skipChildren
         }
         
-        var bindingString = binding.description
+        let bindingString = binding.description
+        let propertyName = binding.pattern.description
+        let typeName = binding.typeAnnotation?.type.description
         
         let leadingTrivia = String(node.description.utf8.prefix(node.leadingTriviaLength.utf8Length))?.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        if node.hasAttribute(named: "Children")
-            || node.hasAttribute(named: "Fluent.Children")
-            || node.hasAttribute(named: "Siblings")
-            || node.hasAttribute(named: "Fluent.Siblings")
-        {
-            // We need to make the type optional, because Fluent does not encode the attribute if it has not been fetched:
-            bindingString += "?"
-        }
-        else if
-            node.hasAttribute(named: "Parent")
-                || node.hasAttribute(named: "Fluent.Parent")
-                || node.hasAttribute(named: "OptionalParent")
-                || node.hasAttribute(named: "Fluent.OptionalParent"),
-            let type = binding.typeAnnotation?.type
-        {
-            let variableName = binding.pattern.description
-            let typeString = type.description
-            bindingString = "\(variableName): SwiftyBridgesClient.ParentReference<\(typeString)>"
-        }
+        let customAttributes = node.attributes?.compactMap { $0.as(CustomAttributeSyntax.self) }
+            .map(CustomVarAttribute.init) ?? []
         
-        let property = InstanceProperty(binding: bindingString, leadingTrivia: leadingTrivia ?? "")
+        let property = InstanceProperty(name: propertyName, type: typeName, binding: bindingString, leadingTrivia: leadingTrivia ?? "", customAttributes: customAttributes)
         self.currentClientStructTemplate?.instanceProperties.append(property)
 
         return .skipChildren
