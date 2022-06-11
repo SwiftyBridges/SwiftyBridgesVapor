@@ -49,6 +49,12 @@ func testGenerateClientStruct() async throws {
     person.youngerSiblings = [person2]
     assert(returnedPerson == person, "Persons did not match")
     
+    print("Testing that ID and object in @Parent and @OptionalParent always match...")
+    returnedDog.owner = UUID()
+    assert(returnedDog.$owner == nil, "Projected value of @Parent was not reset")
+    returnedDog.sitter = nil
+    assert(returnedDog.$sitter == nil, "Projected value of @OptionalParent was not reset")
+    
     // Test if `GenerateHashable` works:
     _ = [Dog: String]()
 }
