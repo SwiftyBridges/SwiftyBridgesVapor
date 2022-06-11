@@ -223,7 +223,7 @@ final class Analysis: SyntaxVisitor {
         let customAttributes = node.attributes?.compactMap { $0.as(CustomAttributeSyntax.self) }
             .map(CustomVarAttribute.init) ?? []
         
-        let property = InstanceProperty(name: propertyName, type: typeName, binding: bindingString, leadingTrivia: leadingTrivia ?? "", customAttributes: customAttributes)
+        let property = InstanceProperty(name: propertyName, type: typeName, binding: bindingString, leadingTrivia: leadingTrivia ?? "", customAttributes: customAttributes, bindingSyntax: binding)
         self.currentClientStructTemplate?.instanceProperties.append(property)
 
         return .skipChildren

@@ -113,7 +113,7 @@ final class Cat: Model, Content, GenerateClientStruct, GenerateEquatable {
     var name: String
     
     @OptionalChild(for: \.$bestCatFriend)
-    var bestDogFriend: Dog?
+    var bestDogFriend: Optional<Dog>
     
     init() { }
 }
