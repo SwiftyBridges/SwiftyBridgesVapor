@@ -138,3 +138,10 @@ final class SiblingPivot: Model {
             self.$youngerSibling.id = try youngerSibling.requireID()
         }
 }
+
+struct GenerateClientStructTestStruct: SwiftyBridges.GenerateClientStruct {}
+struct GenerateEquatableTestStruct: SwiftyBridges.GenerateClientStruct, SwiftyBridges.GenerateEquatable {}
+struct GenerateHashableTestStruct: SwiftyBridges.GenerateClientStruct, SwiftyBridges.GenerateHashable {}
+class GenerateClientStructTestClass: SwiftyBridges.GenerateClientStruct {}
+class GenerateEquatableTestClass: SwiftyBridges.GenerateClientStruct, SwiftyBridges.GenerateEquatable {}
+class GenerateHashableTestClass: SwiftyBridges.GenerateClientStruct, SwiftyBridges.GenerateHashable {}

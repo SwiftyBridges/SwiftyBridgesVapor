@@ -109,4 +109,12 @@ func testGenerateClientStruct() async throws {
     }
     assert(loadedPerson.dogs.isEmpty, "All dogs were encoded")
     assert(loadedPerson.youngerSiblings.isEmpty, "All younger siblings were encoded")
+    
+    print("Testing TestStructs and TestClasses")
+    let _: GenerateClientStructTestStruct
+    assert(GenerateEquatableTestStruct() == GenerateEquatableTestStruct())
+    let _: [GenerateHashableTestStruct: String]
+    let _: GenerateClientStructTestClass
+    assert(GenerateEquatableTestClass() == GenerateEquatableTestClass())
+    let _: [GenerateHashableTestClass: String]
 }

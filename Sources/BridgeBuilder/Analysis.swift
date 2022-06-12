@@ -82,15 +82,15 @@ final class Analysis: SyntaxVisitor {
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        if node.inherits(from: "GenerateEquatable") {
+        if node.inherits(fromAnyOf: "GenerateEquatable", "SwiftyBridges.GenerateEquatable") {
             protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
         }
         
-        if node.inherits(from: "GenerateHashable") {
+        if node.inherits(fromAnyOf: "GenerateHashable", "SwiftyBridges.GenerateHashable") {
             protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Hashable"))
         }
         
-        if node.inherits(from: "APIDefinition") {
+        if node.inherits(fromAnyOf: "APIDefinition", "SwiftyBridges.APIDefinition") {
             guard
                 currentDefinition == nil,
                 currentClientStructTemplate == nil
@@ -103,7 +103,7 @@ final class Analysis: SyntaxVisitor {
             currentDefinition = APIDefinition(name: node.identifier.text, leadingTrivia: leadingTrivia ?? "", structSyntax: node)
             
             return .visitChildren
-        } else if node.inherits(from: "GenerateClientStruct") {
+        } else if node.inherits(fromAnyOf: "GenerateClientStruct", "SwiftyBridges.GenerateClientStruct") {
             guard
                 currentDefinition == nil,
                 currentClientStructTemplate == nil
@@ -127,15 +127,15 @@ final class Analysis: SyntaxVisitor {
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        if node.inherits(from: "GenerateEquatable") {
+        if node.inherits(fromAnyOf: "GenerateEquatable", "SwiftyBridges.GenerateEquatable") {
             protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
         }
         
-        if node.inherits(from: "GenerateHashable") {
+        if node.inherits(fromAnyOf: "GenerateHashable", "SwiftyBridges.GenerateHashable") {
             protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Hashable"))
         }
         
-        guard node.inherits(from: "GenerateClientStruct") else {
+        guard node.inherits(fromAnyOf: "GenerateClientStruct", "SwiftyBridges.GenerateClientStruct") else {
             return .skipChildren
         }
         
@@ -289,8 +289,15 @@ final class Analysis: SyntaxVisitor {
 extension ClassDeclSyntax {
     func inherits(from typeName: String) -> Bool {
         self.inheritanceClause?.inheritedTypeCollection.contains(where: { syntax in
-            syntax.typeName.firstToken?.text == typeName
+            syntax.typeName.withoutTrivia().description == typeName
         }) ?? false
+    }
+    
+    func inherits(fromAnyOf typeNames: String...) -> Bool {
+        typeNames
+            .lazy
+            .map { self.inherits(from: $0) }
+            .contains(true)
     }
 }
 
@@ -309,8 +316,15 @@ extension FunctionDeclSyntax {
 extension StructDeclSyntax {
     func inherits(from typeName: String) -> Bool {
         self.inheritanceClause?.inheritedTypeCollection.contains(where: { syntax in
-            syntax.typeName.firstToken?.text == typeName
+            syntax.typeName.withoutTrivia().description == typeName
         }) ?? false
+    }
+    
+    func inherits(fromAnyOf typeNames: String...) -> Bool {
+        typeNames
+            .lazy
+            .map { self.inherits(from: $0) }
+            .contains(true)
     }
 }
 
