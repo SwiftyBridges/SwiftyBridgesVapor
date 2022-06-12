@@ -1,7 +1,11 @@
 import Foundation
+@testable import SwiftyBridgesClient
 
 func testGenerateClientStruct() async throws {
     let structAPI = GenerateClientStructTestAPI(url: serverURL)
+    
+    // Test if `GenerateHashable` works:
+    _ = [Dog: String]()
     
     _ = try await structAPI.testSimpleStruct(Name(firstName: "First", lastName: "Last"))
     
@@ -50,11 +54,59 @@ func testGenerateClientStruct() async throws {
     assert(returnedPerson == person, "Persons did not match")
     
     print("Testing that ID and object in @Parent and @OptionalParent always match...")
-    returnedDog.owner = UUID()
-    assert(returnedDog.$owner == nil, "Projected value of @Parent was not reset")
-    returnedDog.sitter = nil
-    assert(returnedDog.$sitter == nil, "Projected value of @OptionalParent was not reset")
+    var testDog = returnedDog
+    testDog.owner = UUID()
+    assert(testDog.$owner == nil, "Projected value of @Parent was not reset")
+    testDog.sitter = nil
+    assert(testDog.$sitter == nil, "Projected value of @OptionalParent was not reset")
     
-    // Test if `GenerateHashable` works:
-    _ = [Dog: String]()
+    print("Testing that FluentModelStructs can be saved and loaded via Codable...")
+    let jsonEncoder = JSONEncoder()
+    let jsonDecoder = JSONDecoder()
+    assert(returnedDog.$owner != nil)
+    assert(returnedDog.$sitter != nil)
+    assert(returnedDog.$bestCatFriend != nil)
+    var loadedDog = try jsonDecoder.decode(Dog.self, from: jsonEncoder.encode(returnedDog))
+    assert(loadedDog == returnedDog, "Dogs did not match")
+    assert(loadedDog.$owner == returnedDog.$owner, "Owner was not persisted")
+    assert(loadedDog.$sitter == returnedDog.$sitter, "Sitter was not persisted")
+    assert(loadedDog.$bestCatFriend == returnedDog.$bestCatFriend, "Best cat friend was not persisted")
+    
+    assert(returnedCat.$bestDogFriend != nil)
+    var loadedCat = try jsonDecoder.decode(Cat.self, from: jsonEncoder.encode(returnedCat))
+    assert(loadedCat.$bestDogFriend == returnedCat.$bestDogFriend, "Best dog friend was not persisted")
+    
+    assert(!person.dogs.isEmpty)
+    assert(!person.youngerSiblings.isEmpty)
+    var loadedPerson = try jsonDecoder.decode(Person.self, from: jsonEncoder.encode(person))
+    assert(loadedPerson == person, "Persons did not match")
+    
+    print("testing that only necessary Fluent data is sent to server...")
+    assert(returnedDog.$owner != nil)
+    assert(returnedDog.$sitter != nil)
+    assert(returnedDog.$bestCatFriend != nil)
+    try Environment.$encodingForFluent.withValue(true) {
+        loadedDog = try jsonDecoder.decode(Dog.self, from: jsonEncoder.encode(returnedDog))
+    }
+    assert(loadedDog.owner == returnedDog.owner)
+    assert(loadedDog.$owner == nil, "Full owner was encoded")
+    assert(loadedDog.sitter == returnedDog.sitter)
+    assert(loadedDog.$sitter == nil, "Full sitter was encoded")
+    assert(loadedDog.bestCatFriend == returnedDog.bestCatFriend)
+    assert(loadedDog.$bestCatFriend == nil, "Full best cat friend was encoded")
+    
+    assert(returnedCat.$bestDogFriend != nil)
+    try Environment.$encodingForFluent.withValue(true) {
+        loadedCat = try jsonDecoder.decode(Cat.self, from: jsonEncoder.encode(returnedCat))
+    }
+    assert(loadedCat.bestDogFriend == nil, "Best dog friend was encoded")
+    assert(loadedCat.$bestDogFriend == nil)
+    
+    assert(!person.dogs.isEmpty)
+    assert(!person.youngerSiblings.isEmpty)
+    try Environment.$encodingForFluent.withValue(true) {
+        loadedPerson = try jsonDecoder.decode(Person.self, from: jsonEncoder.encode(person))
+    }
+    assert(loadedPerson.dogs.isEmpty, "All dogs were encoded")
+    assert(loadedPerson.youngerSiblings.isEmpty, "All younger siblings were encoded")
 }
