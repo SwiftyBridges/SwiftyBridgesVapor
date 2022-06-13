@@ -9,6 +9,7 @@ struct Client {
         try await testGenerateClientStruct()
         try await testValidations()
         try await testMiddlewares()
+        try await testCopyToClient()
         
         print("\nAll tests passed!!!")
     }

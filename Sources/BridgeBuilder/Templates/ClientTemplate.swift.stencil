@@ -34,6 +34,10 @@ struct {{ structTemplate.name }}: Codable{% if structTemplate.isFluentModel %}, 
 }
 {% endfor %}
 
+{% for definition in definitionsToCopyToClient %}
+{{ definition }}
+{% endfor %}
+
 {% for extension in protocolConformanceExtensions %}
 extension {{ extension.typeName }}: {{ extension.protocolName }} {}
 {% endfor %}

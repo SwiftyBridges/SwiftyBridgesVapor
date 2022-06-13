@@ -53,6 +53,7 @@ struct BridgeBuilder: ParsableCommand {
             apiDefinitions: analysis.apiDefinitions,
             clientStructTemplates: analysis.clientStructTemplates,
             protocolConformanceExtensions: analysis.protocolConformanceExtensions,
+            definitionsToCopyToClient: analysis.definitionsToCopyToClient,
             serverCodeWarnings: warnings.compactMap { $0.removingPercentEncoding },
             serverOutputFile: serverOutput,
             clientOutputFile: clientOutput

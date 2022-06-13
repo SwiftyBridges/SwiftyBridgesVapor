@@ -16,6 +16,9 @@ final class Analysis: SyntaxVisitor {
     /// Contains a list of extensions that shall be generated to signal protocol conformance
     var protocolConformanceExtensions: [ProtocolConformance] = []
     
+    /// Contains a list of definitions that shall be emitted directly into the client code
+    var definitionsToCopyToClient: [String] = []
+ 
     /// The path to a directory containing the Swift files to be parsed
     private let sourceDirectory: String
 
@@ -82,6 +85,11 @@ final class Analysis: SyntaxVisitor {
     }
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+        if node.hasCopyToClientAnnotation {
+            self.definitionsToCopyToClient.append(node.description)
+            return .skipChildren
+        }
+        
         if node.inherits(fromAnyOf: "GenerateEquatable", "SwiftyBridges.GenerateEquatable") {
             protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
         }
@@ -127,6 +135,11 @@ final class Analysis: SyntaxVisitor {
     }
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+        if node.hasCopyToClientAnnotation {
+            self.definitionsToCopyToClient.append(node.description)
+            return .skipChildren
+        }
+        
         if node.inherits(fromAnyOf: "GenerateEquatable", "SwiftyBridges.GenerateEquatable") {
             protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
         }
@@ -156,6 +169,20 @@ final class Analysis: SyntaxVisitor {
         )
         
         return .visitChildren
+    }
+    
+    override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+        if node.hasCopyToClientAnnotation {
+            self.definitionsToCopyToClient.append(node.description)
+        }
+        return .skipChildren
+    }
+    
+    override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+        if node.hasCopyToClientAnnotation {
+            self.definitionsToCopyToClient.append(node.description)
+        }
+        return .skipChildren
     }
     
     override func visitPost(_ node: StructDeclSyntax) {
@@ -283,6 +310,31 @@ final class Analysis: SyntaxVisitor {
         } else {
             return .void
         }
+    }
+}
+
+extension DeclSyntaxProtocol {
+    /// Returns true if the declaration has a leading comment ` // bridge: copyToClient`
+    var hasCopyToClientAnnotation: Bool {
+        let docLines = self.leadingTrivia?.compactMap { piece -> String? in
+            switch piece {
+            case .lineComment(let line):
+                return line.trimmingCharacters(in: .whitespacesAndNewlines)
+            default:
+                return nil
+            }
+        } ?? []
+        for line in docLines {
+            let lineWithoutSlashes = line.dropFirst(2)
+            let parts = lineWithoutSlashes.components(separatedBy: ":")
+            guard
+                parts.count == 2,
+                parts[0].trimmingCharacters(in: .whitespaces).lowercased() == "bridge",
+                parts[1].trimmingCharacters(in: .whitespaces) == "copyToClient"
+            else { continue }
+            return true
+        }
+        return false
     }
 }
 
