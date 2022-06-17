@@ -9,7 +9,7 @@ ServerProcess=$!
 set +e # This ensures that `kill $ServerProcess` is called if any of the next commands fails
 popd
 
-sleep 1
+sleep 2
 
 pushd Client
 swift run &

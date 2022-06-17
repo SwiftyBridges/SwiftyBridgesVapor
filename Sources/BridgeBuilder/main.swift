@@ -49,11 +49,7 @@ struct BridgeBuilder: ParsableCommand {
         analysis.run()
         
         let generator = Generator(
-            potentiallyUsedImports: analysis.potentiallyUsedImports,
-            apiDefinitions: analysis.apiDefinitions,
-            clientStructTemplates: analysis.clientStructTemplates,
-            protocolConformanceExtensions: analysis.protocolConformanceExtensions,
-            definitionsToCopyToClient: analysis.definitionsToCopyToClient,
+            sourceInfo: analysis.info,
             serverCodeWarnings: warnings.compactMap { $0.removingPercentEncoding },
             serverOutputFile: serverOutput,
             clientOutputFile: clientOutput

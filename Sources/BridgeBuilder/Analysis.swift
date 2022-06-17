@@ -4,21 +4,9 @@ import SwiftSyntaxParser
 
 /// Parses API definitions in the Swift files in the given source directory.
 final class Analysis: SyntaxVisitor {
-    /// Contains the names of all imports used in any file containing an API definition
-    var potentiallyUsedImports: Set<String> = []
-
-    /// Contains infos about the found API definitions after `run()` has finished
-    var apiDefinitions: [APIDefinition] = []
+    /// Holds the information gathered from the parsed source code. ``run()`` needs to be called first.
+    var info = SourceInfo()
     
-    /// Contains infos about the found types conforming to `GenerateClientStruct` after `run()` has finished
-    var clientStructTemplates: [ClientStructTemplate] = []
-    
-    /// Contains a list of extensions that shall be generated to signal protocol conformance
-    var protocolConformanceExtensions: [ProtocolConformance] = []
-    
-    /// Contains a list of definitions that shall be emitted directly into the client code
-    var definitionsToCopyToClient: [String] = []
- 
     /// The path to a directory containing the Swift files to be parsed
     private let sourceDirectory: String
 
@@ -45,7 +33,7 @@ final class Analysis: SyntaxVisitor {
     
     /// Performs the parsing
     func run() {
-        apiDefinitions = []
+        info = SourceInfo()
         let enumerator = FileManager.default.enumerator(atPath: sourceDirectory)
         while let path = enumerator?.nextObject() as? String {
             guard path.hasSuffix(".swift") else {
@@ -86,16 +74,16 @@ final class Analysis: SyntaxVisitor {
     
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         if node.hasCopyToClientAnnotation {
-            self.definitionsToCopyToClient.append(node.description)
+            info.definitionsToCopyToClient.append(node.description)
             return .skipChildren
         }
         
         if node.inherits(fromAnyOf: "GenerateEquatable", "SwiftyBridges.GenerateEquatable") {
-            protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
+            info.protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
         }
         
         if node.inherits(fromAnyOf: "GenerateHashable", "SwiftyBridges.GenerateHashable") {
-            protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Hashable"))
+            info.protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Hashable"))
         }
         
         if node.inherits(fromAnyOf: "APIDefinition", "SwiftyBridges.APIDefinition") {
@@ -136,16 +124,16 @@ final class Analysis: SyntaxVisitor {
     
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         if node.hasCopyToClientAnnotation {
-            self.definitionsToCopyToClient.append(node.description)
+            info.definitionsToCopyToClient.append(node.description)
             return .skipChildren
         }
         
         if node.inherits(fromAnyOf: "GenerateEquatable", "SwiftyBridges.GenerateEquatable") {
-            protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
+            info.protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Equatable"))
         }
         
         if node.inherits(fromAnyOf: "GenerateHashable", "SwiftyBridges.GenerateHashable") {
-            protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Hashable"))
+            info.protocolConformanceExtensions.append(.init(typeName: node.identifier.text, protocolName: "Hashable"))
         }
         
         guard node.inherits(fromAnyOf: "GenerateClientStruct", "SwiftyBridges.GenerateClientStruct") else {
@@ -173,14 +161,14 @@ final class Analysis: SyntaxVisitor {
     
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
         if node.hasCopyToClientAnnotation {
-            self.definitionsToCopyToClient.append(node.description)
+            info.definitionsToCopyToClient.append(node.description)
         }
         return .skipChildren
     }
     
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         if node.hasCopyToClientAnnotation {
-            self.definitionsToCopyToClient.append(node.description)
+            info.definitionsToCopyToClient.append(node.description)
         }
         return .skipChildren
     }
@@ -194,17 +182,17 @@ final class Analysis: SyntaxVisitor {
                 print("WARNING: The type \(currentDefinition.name) seems to have no public methods. No API methods will be generated in the client code.")
             }
             
-            apiDefinitions.append(currentDefinition)
+            info.apiDefinitions.append(currentDefinition)
             self.currentDefinition = nil
-            self.potentiallyUsedImports.formUnion(self.importsOfCurrentFile)
+            info.potentiallyUsedImports.formUnion(self.importsOfCurrentFile)
         }
         else if
             let currentClientStructTemplate = currentClientStructTemplate,
             node == (currentClientStructTemplate.classOrStructSyntax as? StructDeclSyntax)
         {
-            clientStructTemplates.append(currentClientStructTemplate)
+            info.clientStructTemplates.append(currentClientStructTemplate)
             self.currentClientStructTemplate = nil
-            self.potentiallyUsedImports.formUnion(self.importsOfCurrentFile)
+            info.potentiallyUsedImports.formUnion(self.importsOfCurrentFile)
         }
     }
     
@@ -213,9 +201,9 @@ final class Analysis: SyntaxVisitor {
             let currentClientStructTemplate = currentClientStructTemplate,
             node == (currentClientStructTemplate.classOrStructSyntax as? ClassDeclSyntax)
         {
-            clientStructTemplates.append(currentClientStructTemplate)
+            info.clientStructTemplates.append(currentClientStructTemplate)
             self.currentClientStructTemplate = nil
-            self.potentiallyUsedImports.formUnion(self.importsOfCurrentFile)
+            info.potentiallyUsedImports.formUnion(self.importsOfCurrentFile)
         }
     }
     
