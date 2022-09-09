@@ -219,6 +219,10 @@ final class Analysis: SyntaxVisitor {
             // We only want instance properties
             return .skipChildren
         }
+
+        if node.hasAttribute(named: "HiddenFromClient") || node.hasAttribute(named: "SwiftyBridgesFluent.HiddenFromClient") {
+            return .skipChildren
+        }
         
         guard node.bindings.first?.accessor == nil else {
             // This is a computed property. We only want stored properties.

@@ -109,6 +109,12 @@ func testGenerateClientStruct() async throws {
     }
     assert(loadedPerson.dogs.isEmpty, "All dogs were encoded")
     assert(loadedPerson.youngerSiblings.isEmpty, "All younger siblings were encoded")
+
+    print("Testing hiding properties from client...")
+    var modelWithHiddenProperties = ModelWithHiddenProperties(name: "Herbert")
+    let returnedModelWithHiddenProperties = try await structAPI.testModelWithHiddenProperties(modelWithHiddenProperties)
+    modelWithHiddenProperties.id = returnedModelWithHiddenProperties.id
+    assert(returnedModelWithHiddenProperties == modelWithHiddenProperties, "Models did not match")
     
     print("Testing TestStructs and TestClasses")
     let _: GenerateClientStructTestStruct

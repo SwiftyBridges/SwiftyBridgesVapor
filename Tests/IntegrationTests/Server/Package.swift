@@ -20,6 +20,7 @@ let package = Package(
                 .product(name: "Fluent", package: "fluent"),
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
                 .product(name: "SwiftyBridges", package: "SwiftyBridgesVapor"),
+                .product(name: "SwiftyBridgesFluent", package: "SwiftyBridgesVapor"),
                 .product(name: "Vapor", package: "vapor")
             ],
             swiftSettings: [

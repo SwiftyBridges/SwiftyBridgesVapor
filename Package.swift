@@ -11,6 +11,9 @@ let package = Package(
         .library(
             name: "SwiftyBridges",
             targets: ["SwiftyBridges"]),
+        .library(
+            name: "SwiftyBridgesFluent",
+            targets: ["SwiftyBridgesFluent"]),
         .executable(
             name: "BridgeBuilder",
             targets: ["BridgeBuilder"]),
@@ -23,6 +26,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "4.57.0"),
+        .package(url: "https://github.com/vapor/fluent-kit.git", from: "1.35.1"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", exact: "0.50600.1"),
         .package(url: "https://github.com/stencilproject/Stencil.git", .upToNextMinor(from: "0.14.1")),
@@ -32,6 +36,13 @@ let package = Package(
             name: "SwiftyBridges",
             dependencies: [
                 .product(name: "Vapor", package: "vapor"),
+            ]
+        ),
+        .target(
+            name: "SwiftyBridgesFluent",
+            dependencies: [
+                .product(name: "Vapor", package: "vapor"),
+                .product(name: "FluentKit", package: "fluent-kit"),
             ]
         ),
         .executableTarget(

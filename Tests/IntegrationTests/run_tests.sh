@@ -19,3 +19,4 @@ popd
 wait $ClientProcess
 
 kill $ServerProcess
+rm Server/db.sqlite

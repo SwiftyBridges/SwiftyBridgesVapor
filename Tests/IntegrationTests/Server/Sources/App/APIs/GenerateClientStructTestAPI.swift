@@ -1,5 +1,6 @@
 import Fluent
 import SwiftyBridges
+import SwiftyBridgesFluent
 import Vapor
 
 struct GenerateClientStructTestAPI: APIDefinition {
@@ -37,6 +38,18 @@ struct GenerateClientStructTestAPI: APIDefinition {
     public func testCat(_ cat: Cat, bestDogFriend: Dog) -> Cat {
         cat.$bestDogFriend.value = bestDogFriend
         return cat
+    }
+
+    public func testModelWithHiddenProperties(_ model: ModelWithHiddenProperties) async throws -> ModelWithHiddenProperties {
+        model.hiddenBoolean = true
+        model.hiddenEnum = .hiddenCase
+        model.hiddenField = "A hidden field"
+        model.hiddenGroup = HiddenGroup(fieldInGroup: "A hidden field in a group")
+        let parent = HiddenParent()
+        try await parent.save(on: req.db)
+        model.$hiddenParent.id = try parent.requireID()
+        try await model.save(on: req.db)
+        return model
     }
 }
 
@@ -137,6 +150,123 @@ final class SiblingPivot: Model {
             self.$olderSibling.id = try olderSibling.requireID()
             self.$youngerSibling.id = try youngerSibling.requireID()
         }
+}
+
+final class ModelWithHiddenProperties: Model, Content, GenerateClientStruct, GenerateEquatable {
+    static let schema = "models_with_hidden_properties"
+    
+    @ID
+    var id: UUID?
+    
+    @Field(key: "name")
+    var name: String
+
+    @HiddenFromClient(Boolean(key: "hidden_boolean"))
+    var hiddenBoolean: Bool
+
+    @HiddenFromClient(Children(for: \.$parent))
+    var hiddenChildren: [HiddenChild]
+
+    @HiddenFromClient(Enum(key: "hidden_enum"))
+    var hiddenEnum: HiddenEnum
+    
+    @HiddenFromClient(Field(key: "hidden_field"))
+    var hiddenField: String
+
+    @HiddenFromClient(Group(key: "hidden_group"))
+    var hiddenGroup: HiddenGroup
+
+    @HiddenFromClient(OptionalBoolean(key: "hidden_boolean2"))
+    var hiddenBoolean2: Bool?
+
+    @HiddenFromClient(OptionalChild(for: \.$parent))
+    var hiddenChild: HiddenChild?
+
+    @HiddenFromClient(OptionalEnum(key: "hidden_optional_enum"))
+    var hiddenOptionalEnum: HiddenEnum?
+    
+    @HiddenFromClient(OptionalField(key: "hidden_optional_field"))
+    var hiddenOptionalField: String?
+    
+    @HiddenFromClient(OptionalParent(key: "hidden_optional_parent"))
+    var hiddenOptionalParent: HiddenParent?
+    
+    @HiddenFromClient(Parent(key: "hidden_parent"))
+    var hiddenParent: HiddenParent
+
+    @HiddenFromClient(Siblings(through: Pivot.self, from: \.$source, to: \.$target))
+    var hiddenSiblings: [HiddenSibling]
+
+    @HiddenFromClient(Timestamp(key: "hidden_timestamp", on: .create))
+    var hiddenTimestamp: Date?
+    
+    init() { }
+    
+    init(id: UUID? = nil, name: String, hiddenField: String) {
+        self.id = id
+        self.name = name
+        self.hiddenField = hiddenField
+    }
+}
+
+final class HiddenChild: Model {
+    static let schema = "hidden_children"
+
+    @ID
+    var id: UUID?
+
+    @Parent(key: "parent_id")
+    var parent: ModelWithHiddenProperties
+    
+    init() { }
+}
+
+enum HiddenEnum: String, Codable {
+    case hiddenCase
+}
+
+final class HiddenGroup: Fields {
+    @Field(key: "field_in_group")
+    var fieldInGroup: String
+
+    init() {}
+
+    init(fieldInGroup: String) {
+        self.fieldInGroup = fieldInGroup
+    }
+}
+
+final class HiddenParent: Model {
+    static let schema = "hidden_parents"
+
+    @ID
+    var id: UUID?
+    
+    init() { }
+}
+
+final class Pivot: Model {
+    static let schema = "pivots"
+
+    @ID
+    var id: UUID?
+
+    @Parent(key: "source_id")
+    var source: ModelWithHiddenProperties
+
+    @Parent(key: "target_id")
+    var target: HiddenSibling
+    
+    init() { }
+}
+
+final class HiddenSibling: Model {
+    static let schema = "hidden_siblings"
+
+    @ID
+    var id: UUID?
+    
+    init() { }
 }
 
 struct GenerateClientStructTestStruct: SwiftyBridges.GenerateClientStruct {}
