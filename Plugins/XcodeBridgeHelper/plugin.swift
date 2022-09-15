@@ -28,12 +28,12 @@ import PackagePlugin
             .deletingLastPathComponent()
         let sourcePackagesFolderURL = projectDerivedDataFolderURL.appendingPathComponent("SourcePackages", isDirectory: true)
         guard FileManager.default.directoryExists(at: sourcePackagesFolderURL) else {
-            throw PluginError.couldNotFindSourcePackagesFolder
+            throw PluginError.couldNotFindSourcePackagesFolder(expectedURL: sourcePackagesFolderURL)
         }
         
         let packageSourcePackagesFolderURL = sourcePackagesFolderURL.appendingPathComponent(context.package.displayName.lowercased(), isDirectory: true)
         guard FileManager.default.directoryExists(at: packageSourcePackagesFolderURL) else {
-            throw PluginError.couldNotFindPackageSourcePackagesFolder
+            throw PluginError.couldNotFindPackageSourcePackagesFolder(expectedURL: packageSourcePackagesFolderURL)
         }
         
         // Gather the info of all targets using the `APICodeGenerator` plugin:
@@ -88,8 +88,8 @@ struct TargetInfo {
 enum PluginError: Error, CustomStringConvertible {
     case pluginWasNotRunFromXcode
     case couldNotReadBuildProductsPath
-    case couldNotFindSourcePackagesFolder
-    case couldNotFindPackageSourcePackagesFolder
+    case couldNotFindSourcePackagesFolder(expectedURL: URL)
+    case couldNotFindPackageSourcePackagesFolder(expectedURL: URL)
     
     var description: String {
         switch self {
@@ -107,13 +107,13 @@ enum PluginError: Error, CustomStringConvertible {
             return """
                 xcode-bridge-helper could not read the build products path. Please ensure that this command is run in a post-build script of the main scheme of your package in Xcode and be sure to select the 'App' target under 'Provide build settings from'.
                 """
-        case .couldNotFindSourcePackagesFolder:
+        case .couldNotFindSourcePackagesFolder(let expectedURL):
             return """
-                xcode-bridge-helper could not find the 'SourcePackages' folder. Please create an issue at https://github.com/SwiftyBridges/SwiftyBridgesVapor.
+                xcode-bridge-helper could not find the 'SourcePackages' folder. Expected URL: \(expectedURL). Please create an issue at https://github.com/SwiftyBridges/SwiftyBridgesVapor.
                 """
-        case .couldNotFindPackageSourcePackagesFolder:
+        case .couldNotFindPackageSourcePackagesFolder(let expectedURL):
             return """
-                xcode-bridge-helper could not find the package-specific source packages folder. Please create an issue at https://github.com/SwiftyBridges/SwiftyBridgesVapor.
+                xcode-bridge-helper could not find the package-specific source packages folder. Expected URL: \(expectedURL). Please create an issue at https://github.com/SwiftyBridges/SwiftyBridgesVapor.
                 """
         }
     }
