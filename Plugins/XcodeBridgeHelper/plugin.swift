@@ -31,7 +31,9 @@ import PackagePlugin
             throw PluginError.couldNotFindSourcePackagesFolder(expectedURL: sourcePackagesFolderURL)
         }
         
-        let packageSourcePackagesFolderURL = sourcePackagesFolderURL.appendingPathComponent(context.package.displayName.lowercased(), isDirectory: true)
+        let packageSourcePackagesFolderURL = sourcePackagesFolderURL
+            .appendingPathComponent("plugins")
+            .appendingPathComponent(context.package.displayName.lowercased() + ".output", isDirectory: true)
         guard FileManager.default.directoryExists(at: packageSourcePackagesFolderURL) else {
             throw PluginError.couldNotFindPackageSourcePackagesFolder(expectedURL: packageSourcePackagesFolderURL)
         }
