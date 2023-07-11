@@ -28,7 +28,7 @@ let package = Package(
         .package(url: "https://github.com/vapor/vapor.git", from: "4.57.0"),
         .package(url: "https://github.com/vapor/fluent-kit.git", from: "1.35.1"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0"),
-        .package(url: "https://github.com/apple/swift-syntax.git", exact: "0.50600.1"),
+        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0-swift-5.9-DEVELOPMENT-SNAPSHOT-2023-04-25-b"),
         .package(url: "https://github.com/stencilproject/Stencil.git", .upToNextMinor(from: "0.14.1")),
     ],
     targets: [
@@ -50,26 +50,17 @@ let package = Package(
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Stencil", package: "Stencil"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxParser", package: "swift-syntax"),
-                "lib_InternalSwiftSyntaxParser",
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax")
             ],
             resources: [
                 .copy("Templates")
-            ],
-            // `-dead_strip_dylibs` is passed because we want to use the version of lib_InternalSwiftSyntaxParser from StaticInternalSwiftSyntaxParser.
-            linkerSettings: [
-                .unsafeFlags(["-Xlinker", "-dead_strip_dylibs"])
             ]
         ),
         .testTarget(
             name: "SwiftyBridgesTests",
             dependencies: ["SwiftyBridges"]
-        ),
-        .binaryTarget(
-            name: "lib_InternalSwiftSyntaxParser",
-            url: "https://github.com/keith/StaticInternalSwiftSyntaxParser/releases/download/5.6/lib_InternalSwiftSyntaxParser.xcframework.zip",
-            checksum: "88d748f76ec45880a8250438bd68e5d6ba716c8042f520998a438db87083ae9d"
         ),
         .plugin(
             name: "APICodeGenerator",

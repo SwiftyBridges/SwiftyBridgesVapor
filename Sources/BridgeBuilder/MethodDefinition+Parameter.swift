@@ -14,12 +14,9 @@ extension MethodDefinition {
 
 extension MethodDefinition.Parameter {
     init(_ syntax: FunctionParameterSyntax) {
-        guard let typeName = syntax.type?.withoutTrivia().description else {
-            fatalError("Could not parse method argument '\(syntax.withTrailingComma(nil).withoutTrivia().description)'")
-        }
-        
-        firstName = syntax.firstName?.withoutTrivia().description
-        secondName = syntax.secondName?.withoutTrivia().description
+        let typeName = syntax.type.trimmedDescription
+        firstName = syntax.firstName.trimmedDescription
+        secondName = syntax.secondName?.trimmedDescription
         self.typeName = typeName
     }
 }

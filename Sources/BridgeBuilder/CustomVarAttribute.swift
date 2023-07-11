@@ -5,7 +5,7 @@ import SwiftSyntax
 struct CustomVarAttribute {
     var name: String
     
-    init(_ syntax: CustomAttributeSyntax) {
+    init(_ syntax: AttributeSyntax) {
         name = syntax.attributeName.description
     }
 }

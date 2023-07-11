@@ -1,6 +1,6 @@
 import Foundation
+import SwiftParser
 import SwiftSyntax
-import SwiftSyntaxParser
 
 /// Parses API definitions in the Swift files in the given source directory.
 final class Analysis: SyntaxVisitor {
@@ -29,6 +29,7 @@ final class Analysis: SyntaxVisitor {
     /// - Parameter sourceDirectory: The path to a directory containing the Swift files to be parsed
     init(sourceDirectory: String) {
         self.sourceDirectory = sourceDirectory
+        super.init(viewMode: .fixedUp)
     }
     
     /// Performs the parsing
@@ -51,7 +52,8 @@ final class Analysis: SyntaxVisitor {
     }
     
     func analyze(file path: URL) throws {
-        let sourceFile = try SyntaxParser.parse(path)
+        let sourceString = try String(contentsOf: path)
+        let sourceFile = Parser.parse(source: sourceString)
         self.importsOfCurrentFile = []
         let filePath = path.standardized.absoluteURL.path
         self.currentFilePath = filePath
@@ -62,9 +64,9 @@ final class Analysis: SyntaxVisitor {
     override func visit(_ node: ImportDeclSyntax) -> SyntaxVisitorContinueKind {
         let importName: String
         if node.importKind == nil {
-            importName = node.path.withoutTrivia().description
+            importName = node.path.trimmedDescription
         } else {
-            importName = node.path.removingLast().withoutTrivia().description.trimmingCharacters(in: .init(charactersIn: "."))
+            importName = node.path.removingLast().trimmed.description.trimmingCharacters(in: .init(charactersIn: "."))
         }
 
         self.importsOfCurrentFile.insert(importName)
@@ -239,7 +241,7 @@ final class Analysis: SyntaxVisitor {
         
         let leadingTrivia = String(node.description.utf8.prefix(node.leadingTriviaLength.utf8Length))?.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        let customAttributes = node.attributes?.compactMap { $0.as(CustomAttributeSyntax.self) }
+        let customAttributes = node.attributes?.compactMap { $0.as(AttributeSyntax.self) }
             .map(CustomVarAttribute.init) ?? []
         
         let property = InstanceProperty(name: propertyName, type: typeName, binding: bindingString, leadingTrivia: leadingTrivia ?? "", customAttributes: customAttributes, bindingSyntax: binding)
@@ -259,14 +261,15 @@ final class Analysis: SyntaxVisitor {
         let leadingTrivia = String(node.description.utf8.prefix(node.leadingTriviaLength.utf8Length))?.trimmingCharacters(in: .whitespacesAndNewlines)
         
         let mayThrow: Bool
-        switch node.signature.throwsOrRethrowsKeyword?.tokenKind {
-        case .throwsKeyword, .rethrowsKeyword:
+        let effectSpecifiers = node.signature.effectSpecifiers
+        switch effectSpecifiers?.throwsSpecifier?.text {
+        case "throws", "rethrows":
             mayThrow = true
         default:
             mayThrow = false
         }
         
-        let isAsync = node.signature.asyncOrReasyncKeyword?.text == "async"
+        let isAsync = effectSpecifiers?.asyncSpecifier?.text == "async"
         
         let returnType = self.returnType(of: node)
         
@@ -283,7 +286,7 @@ final class Analysis: SyntaxVisitor {
             mayThrow: mayThrow,
             returnType: returnType,
             filePath: currentFilePath,
-            lineNumber: functionNameSourceRange.start.line ?? 1
+            lineNumber: functionNameSourceRange.start.line 
         )
         
         currentDeclaration.publicMethods.append(methodDefinition)
@@ -297,7 +300,7 @@ final class Analysis: SyntaxVisitor {
             if type.isVoid {
                 return .void
             } else {
-                return .codable(typeName: type.withoutTrivia().description)
+                return .codable(typeName: type.trimmedDescription)
             }
         } else {
             return .void
@@ -308,14 +311,14 @@ final class Analysis: SyntaxVisitor {
 extension DeclSyntaxProtocol {
     /// Returns true if the declaration has a leading comment ` // bridge: copyToClient`
     var hasCopyToClientAnnotation: Bool {
-        let docLines = self.leadingTrivia?.compactMap { piece -> String? in
+        let docLines = self.leadingTrivia.compactMap { piece -> String? in
             switch piece {
             case .lineComment(let line):
                 return line.trimmingCharacters(in: .whitespacesAndNewlines)
             default:
                 return nil
             }
-        } ?? []
+        }
         for line in docLines {
             let lineWithoutSlashes = line.dropFirst(2)
             let parts = lineWithoutSlashes.components(separatedBy: ":")
@@ -333,7 +336,7 @@ extension DeclSyntaxProtocol {
 extension ClassDeclSyntax {
     func inherits(from typeName: String) -> Bool {
         self.inheritanceClause?.inheritedTypeCollection.contains(where: { syntax in
-            syntax.typeName.withoutTrivia().description == typeName
+            syntax.typeName.trimmedDescription == typeName
         }) ?? false
     }
     
@@ -348,7 +351,7 @@ extension ClassDeclSyntax {
 extension FunctionDeclSyntax {
     var isInlinable: Bool {
         self.attributes?.compactMap { $0.as(AttributeSyntax.self) }
-        .contains { $0.attributeName.withoutTrivia().description == "inlinable" }
+        .contains { $0.attributeName.trimmedDescription == "inlinable" }
         ?? false
     }
     
@@ -360,7 +363,7 @@ extension FunctionDeclSyntax {
 extension StructDeclSyntax {
     func inherits(from typeName: String) -> Bool {
         self.inheritanceClause?.inheritedTypeCollection.contains(where: { syntax in
-            syntax.typeName.withoutTrivia().description == typeName
+            syntax.typeName.trimmedDescription == typeName
         }) ?? false
     }
     
@@ -379,7 +382,7 @@ extension TypeSyntax {
             tupleSyntax.elements.count == 0
         {
             return true
-        } else if self.withoutTrivia().description == "Void" {
+        } else if self.trimmedDescription == "Void" {
             return true
         } else {
             return false
@@ -390,7 +393,7 @@ extension TypeSyntax {
 extension VariableDeclSyntax {
     func hasAttribute(named attributeName: String) -> Bool {
         self.attributes?.contains(where: { syntax in
-            syntax.as(CustomAttributeSyntax.self)?.attributeName.description == attributeName
+            syntax.as(AttributeSyntax.self)?.attributeName.description == attributeName
         }) ?? false
     }
 }
