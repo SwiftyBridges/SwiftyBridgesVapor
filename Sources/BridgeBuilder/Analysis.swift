@@ -3,12 +3,45 @@ import SwiftParser
 import SwiftSyntax
 
 /// Parses API definitions in the Swift files in the given source directory.
-final class Analysis: SyntaxVisitor {
-    /// Holds the information gathered from the parsed source code. ``run()`` needs to be called first.
-    var info = SourceInfo()
-    
+class Analysis {
     /// The path to a directory containing the Swift files to be parsed
     private let sourceDirectory: String
+    
+    private var core: AnalysisCore
+    
+    /// Default initializer
+    /// - Parameter sourceDirectory: The path to a directory containing the Swift files to be parsed
+    init(sourceDirectory: String) {
+        self.sourceDirectory = sourceDirectory
+        core = AnalysisCore()
+    }
+    
+    var info: SourceInfo { core.info }
+    
+    /// Performs the parsing
+    func run() {
+        core.info = SourceInfo()
+        let enumerator = FileManager.default.enumerator(atPath: sourceDirectory)
+        while let path = enumerator?.nextObject() as? String {
+            guard path.hasSuffix(".swift") else {
+                continue
+            }
+            
+            let relativeURL = URL(fileURLWithPath: path, relativeTo: URL(fileURLWithPath: sourceDirectory))
+            let url = relativeURL.absoluteURL
+            do {
+                let sourceString = try String(contentsOf: url)
+                try core.analyze(sourceString: sourceString, path: url)
+            } catch {
+                fatalError("ERROR: Failed analysis of [\(url)]: \(error)")
+            }
+        }
+    }
+}
+
+final class AnalysisCore: SyntaxVisitor {
+    /// Holds the information gathered from the parsed source code. ``run()`` needs to be called first.
+    var info = SourceInfo()
 
     /// The names of the imports in the file currently analyzed
     private var importsOfCurrentFile: Set<String> = []
@@ -26,33 +59,11 @@ final class Analysis: SyntaxVisitor {
     private var sourceLocationConverter = SourceLocationConverter(file: "", source: "")
     
     /// Default initializer
-    /// - Parameter sourceDirectory: The path to a directory containing the Swift files to be parsed
-    init(sourceDirectory: String) {
-        self.sourceDirectory = sourceDirectory
+    init() {
         super.init(viewMode: .fixedUp)
     }
     
-    /// Performs the parsing
-    func run() {
-        info = SourceInfo()
-        let enumerator = FileManager.default.enumerator(atPath: sourceDirectory)
-        while let path = enumerator?.nextObject() as? String {
-            guard path.hasSuffix(".swift") else {
-                continue
-            }
-            
-            let relativeURL = URL(fileURLWithPath: path, relativeTo: URL(fileURLWithPath: sourceDirectory))
-            let url = relativeURL.absoluteURL
-            do {
-                try analyze(file: url)
-            } catch {
-                fatalError("ERROR: Failed analysis of [\(url)]: \(error)")
-            }
-        }
-    }
-    
-    func analyze(file path: URL) throws {
-        let sourceString = try String(contentsOf: path)
+    func analyze(sourceString: String, path: URL) throws {
         let sourceFile = Parser.parse(source: sourceString)
         self.importsOfCurrentFile = []
         let filePath = path.standardized.absoluteURL.path

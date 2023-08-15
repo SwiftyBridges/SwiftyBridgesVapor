@@ -59,6 +59,10 @@ let package = Package(
             ]
         ),
         .testTarget(
+            name: "BridgeBuilderTests",
+            dependencies: ["BridgeBuilder"]
+        ),
+        .testTarget(
             name: "SwiftyBridgesTests",
             dependencies: ["SwiftyBridges"]
         ),
